@@ -21,16 +21,16 @@ const ContributionLog: React.FC<ContributionLogProps> = ({ contributions, member
       {sortedContributions.length > 0 ? (
         <ul className="divide-y divide-gray-200 max-h-80 overflow-y-auto">
           {sortedContributions.slice(0, 15).map(c => (
-            <li key={c.id} className="group relative px-5 py-3 flex justify-between items-center">
-              <div>
-                <p className="font-medium text-gray-800">{memberMap.get(c.memberId) || 'Unknown Member'}</p>
+            <li key={c.id} className="px-5 py-3 flex justify-between items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-800 truncate">{memberMap.get(c.memberId) || 'Unknown Member'}</p>
                 <p className="text-sm text-gray-500">{new Date(c.date).toLocaleDateString('en-CA')}</p>
               </div>
-              <div className="flex items-center">
-                <span className="font-semibold text-green-600 transition-opacity group-hover:opacity-0">
+              <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                <span className="font-semibold text-green-600 text-sm sm:text-base">
                   +₱{c.amount.toLocaleString()}
                 </span>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center border-l border-gray-200 pl-1 sm:pl-2">
                   <button
                     onClick={() => onEdit(c)}
                     className="p-1.5 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800"

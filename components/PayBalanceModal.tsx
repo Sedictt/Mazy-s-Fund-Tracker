@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Member } from '../types';
 import Modal from './common/Modal';
@@ -35,7 +34,7 @@ const PayBalanceModal: React.FC<PayBalanceModalProps> = ({ isOpen, onClose, memb
   };
   
   const paymentIcon = (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
     </svg>
   );
@@ -57,24 +56,24 @@ const PayBalanceModal: React.FC<PayBalanceModalProps> = ({ isOpen, onClose, memb
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="block w-full pl-7 pr-12 py-2 border-gray-300 rounded-md focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+              className="block w-full pl-7 pr-12 py-2 border-gray-300 rounded-md focus:ring-violet-500 focus:border-violet-500 sm:text-sm"
               placeholder="0.00"
             />
           </div>
         </div>
       </div>
-      <div className="mt-6 flex justify-end space-x-3">
+      <div className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
+          className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
         >
           Cancel
         </button>
         <button
           type="button"
           onClick={handlePayment}
-          className="px-4 py-2 text-sm font-medium text-white bg-cyan-600 border border-transparent rounded-md shadow-sm hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
+          className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-violet-600 border border-transparent rounded-md shadow-sm hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
         >
           Record Payment
         </button>

@@ -8,6 +8,7 @@ import MemberList from './components/MemberList';
 import ContributionLog from './components/ContributionLog';
 import PayBalanceModal from './components/PayBalanceModal';
 import EditContributionModal from './components/EditContributionModal';
+import ConfirmationModal from './components/common/ConfirmationModal';
 import { getTodayDateString, countContributionDays } from './utils/date';
 
 const App: React.FC = () => {
@@ -22,6 +23,7 @@ const App: React.FC = () => {
   const [goal, setGoal] = useLocalStorage<number>('swim_fund_goal', 5000);
   const [payingMember, setPayingMember] = useState<Member | null>(null);
   const [editingContribution, setEditingContribution] = useState<Contribution | null>(null);
+  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
   
   const CONTRIBUTION_AMOUNT = 10;
 
@@ -38,15 +40,17 @@ const App: React.FC = () => {
     setMembers([...members, newMember]);
   };
 
-  const handleDeleteMember = (id: string) => {
-    const memberToDelete = members.find(m => m.id === id);
-    if (!memberToDelete) return;
-
-    if (window.confirm(`Are you sure you want to delete ${memberToDelete.name}? All of their contribution records will also be deleted. This action cannot be undone.`)) {
-        setMembers(members.filter(m => m.id !== id));
-        setContributions(contributions.filter(c => c.memberId !== id));
-    }
+  const handleDeleteMember = (member: Member) => {
+    setMemberToDelete(member);
   };
+
+  const confirmDeleteMember = () => {
+    if (!memberToDelete) return;
+    setMembers(members.filter(m => m.id !== memberToDelete.id));
+    setContributions(contributions.filter(c => c.memberId !== memberToDelete.id));
+    setMemberToDelete(null);
+  };
+
 
   const addContribution = (memberId: string) => {
     const today = getTodayDateString();
@@ -205,7 +209,7 @@ const App: React.FC = () => {
   }, [contributions, members]);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
+    <div className="min-h-screen bg-violet-50 text-gray-800">
       <Header />
       <main className="container mx-auto p-4 md:p-6 lg:p-8">
         <Dashboard
@@ -262,6 +266,16 @@ const App: React.FC = () => {
             contribution={editingContribution}
             members={members}
             onSave={handleUpdateContribution}
+        />
+      )}
+
+      {memberToDelete && (
+        <ConfirmationModal
+          isOpen={!!memberToDelete}
+          onClose={() => setMemberToDelete(null)}
+          onConfirm={confirmDeleteMember}
+          title={`Delete ${memberToDelete.name}?`}
+          message="This will permanently delete the member and all of their contribution records. This action cannot be undone."
         />
       )}
 

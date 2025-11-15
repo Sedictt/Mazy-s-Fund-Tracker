@@ -13,7 +13,7 @@ interface DashboardProps {
 
 const StatCard: React.FC<{ title: string; value: string; icon: React.ReactNode }> = ({ title, value, icon }) => (
     <Card className="flex items-center p-4">
-        <div className="p-3 rounded-full bg-cyan-100 text-cyan-600 mr-4">
+        <div className="p-3 rounded-full bg-violet-100 text-violet-600 mr-4">
             {icon}
         </div>
         <div>
@@ -67,30 +67,32 @@ const Dashboard: React.FC<DashboardProps> = ({ totalContributions, goalAmount, m
       <Card className="mt-6 p-4">
         <div className="flex justify-between items-center mb-2">
             <h3 className="text-lg font-semibold text-gray-700">Progress to Goal</h3>
-            <span className="text-lg font-bold text-cyan-600">{progress}%</span>
+            <span className="text-lg font-bold text-violet-600">{progress}%</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-4">
           <div
-            className="bg-cyan-500 h-4 rounded-full transition-all duration-500 ease-out"
+            className="bg-violet-500 h-4 rounded-full transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
-        <div className="mt-4 flex items-center justify-end gap-4">
+        <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-end gap-3 sm:gap-4">
             {!isEditingGoal && <DataImporter onImport={onImportData} />}
             {isEditingGoal ? (
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                     <input
                         type="number"
                         value={newGoal}
                         onChange={(e) => setNewGoal(e.target.value)}
-                        className="px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-cyan-500 focus:border-cyan-500 text-sm w-32"
+                        className="px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-violet-500 focus:border-violet-500 text-sm w-full sm:w-32"
                         placeholder="Set new goal"
                     />
-                    <button onClick={handleGoalSave} className="px-3 py-1 bg-cyan-500 text-white rounded-md text-sm hover:bg-cyan-600">Save</button>
-                    <button onClick={() => setIsEditingGoal(false)} className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300">Cancel</button>
+                    <div className="flex items-center gap-2">
+                        <button onClick={handleGoalSave} className="flex-1 px-3 py-1 bg-violet-500 text-white rounded-md text-sm hover:bg-violet-600">Save</button>
+                        <button onClick={() => setIsEditingGoal(false)} className="flex-1 px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300">Cancel</button>
+                    </div>
                 </div>
             ) : (
-                <button onClick={() => setIsEditingGoal(true)} className="flex items-center space-x-1 text-sm text-cyan-600 hover:text-cyan-800">
+                <button onClick={() => setIsEditingGoal(true)} className="flex items-center justify-center sm:justify-start space-x-1 text-sm text-violet-600 hover:text-violet-800">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>

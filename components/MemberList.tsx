@@ -9,7 +9,7 @@ interface MemberListProps {
   balances: Map<string, number>;
   onAddMember: (name: string) => void;
   onPayBalance: (member: Member) => void;
-  onDeleteMember: (id: string) => void;
+  onDeleteMember: (member: Member) => void;
 }
 
 const BalanceStatus: React.FC<{ balance: number }> = ({ balance }) => {
@@ -48,7 +48,7 @@ const MemberList: React.FC<MemberListProps> = ({ members, memberTotals, balances
           <h3 className="text-xl font-bold text-gray-800">Members</h3>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="p-2 rounded-full text-cyan-600 bg-cyan-100 hover:bg-cyan-200"
+            className="p-2 rounded-full text-violet-600 bg-violet-100 hover:bg-violet-200"
             aria-label="Add new member"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -60,18 +60,23 @@ const MemberList: React.FC<MemberListProps> = ({ members, memberTotals, balances
           {members.map((member) => {
             const balance = balances.get(member.id) || 0;
             return (
-              <li key={member.id} className="group px-5 py-3">
+              <li key={member.id} className="px-5 py-3">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                        <div>
-                            <p className="font-medium text-gray-800">{member.name}</p>
+                    <div className="flex items-center space-x-2 flex-1 min-w-0">
+                        <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-800 truncate">{member.name}</p>
                             <p className="text-sm text-gray-500">
                                 Total Contributed: ₱{(memberTotals.get(member.id) || 0).toLocaleString()}
                             </p>
                         </div>
+                    </div>
+                    <div className="flex items-center flex-shrink-0 ml-2">
+                        <div className="text-right">
+                           <BalanceStatus balance={balance} />
+                        </div>
                         <button
-                            onClick={() => onDeleteMember(member.id)}
-                            className="p-1.5 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => onDeleteMember(member)}
+                            className="p-1.5 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-600 transition-colors ml-1"
                             aria-label={`Delete ${member.name}`}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -79,15 +84,12 @@ const MemberList: React.FC<MemberListProps> = ({ members, memberTotals, balances
                             </svg>
                         </button>
                     </div>
-                    <div className="text-right">
-                       <BalanceStatus balance={balance} />
-                    </div>
                 </div>
                 {balance > 0 && (
                     <div className="mt-2 text-right">
                         <button 
                             onClick={() => onPayBalance(member)}
-                            className="px-3 py-1 text-xs font-semibold text-white bg-cyan-500 rounded-full shadow-sm hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
+                            className="px-3 py-1 text-xs font-semibold text-white bg-violet-500 rounded-full shadow-sm hover:bg-violet-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
                         >
                             Record Payment
                         </button>
@@ -107,22 +109,22 @@ const MemberList: React.FC<MemberListProps> = ({ members, memberTotals, balances
               type="text"
               value={newMemberName}
               onChange={(e) => setNewMemberName(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-violet-500 focus:border-violet-500 sm:text-sm"
               placeholder="e.g. John Doe"
             />
         </div>
-        <div className="mt-6 flex justify-end space-x-3">
+        <div className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
           <button
             type="button"
             onClick={() => setIsModalOpen(false)}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
+            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleAddMember}
-            className="px-4 py-2 text-sm font-medium text-white bg-cyan-600 border border-transparent rounded-md shadow-sm hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
+            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-violet-600 border border-transparent rounded-md shadow-sm hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
           >
             Add Member
           </button>
