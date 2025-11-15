@@ -1,7 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Member, Contribution } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
 import Header from './components/Header';
+import { db } from './firebase';
+import { collection, getDocs, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
+
 import Dashboard from './components/Dashboard';
 import DailyTracker from './components/DailyTracker';
 import MemberList from './components/MemberList';
@@ -15,55 +18,8 @@ import { getTodayDateString, countContributionDays } from './utils/date';
 type Page = 'dashboard' | 'dataTable';
 
 const App: React.FC = () => {
-  const [members, setMembers] = useLocalStorage<Member[]>('swim_fund_members', [
-    { id: '1', name: 'Margaux', joinDate: '2025-11-04T00:00:00.000Z' },
-    { id: '2', name: 'Lorraine', joinDate: '2025-11-04T00:00:00.000Z' },
-    { id: '3', name: 'Raineer', joinDate: '2025-11-04T00:00:00.000Z' },
-    { id: '4', name: 'Deign', joinDate: '2025-11-04T00:00:00.000Z' },
-    { id: '5', name: 'Jv', joinDate: '2025-11-04T00:00:00.000Z' },
-    { id: '6', name: 'Bryan', joinDate: '2025-11-04T00:00:00.000Z' },
-  ]);
-
-  const [contributions, setContributions] = useLocalStorage<Contribution[]>('swim_fund_contributions', [
-    { id: 'c1', memberId: '1', date: '2025-11-04', amount: 10 },
-    { id: 'c2', memberId: '2', date: '2025-11-04', amount: 10 },
-    { id: 'c3', memberId: '3', date: '2025-11-04', amount: 10 },
-    { id: 'c4', memberId: '4', date: '2025-11-04', amount: 10 },
-    { id: 'c5', memberId: '5', date: '2025-11-04', amount: 10 },
-    { id: 'c6', memberId: '6', date: '2025-11-04', amount: 10 },
-    { id: 'c7', memberId: '1', date: '2025-11-05', amount: 10 },
-    { id: 'c8', memberId: '2', date: '2025-11-05', amount: 10 },
-    { id: 'c9', memberId: '3', date: '2025-11-05', amount: 10 },
-    { id: 'c10', memberId: '4', date: '2025-11-05', amount: 10 },
-    { id: 'c11', memberId: '5', date: '2025-11-05', amount: 10 },
-    { id: 'c12', memberId: '6', date: '2025-11-05', amount: 10 },
-    { id: 'c13', memberId: '1', date: '2025-11-06', amount: 10 },
-    { id: 'c14', memberId: '2', date: '2025-11-06', amount: 10 },
-    { id: 'c15', memberId: '3', date: '2025-11-06', amount: 10 },
-    { id: 'c16', memberId: '4', date: '2025-11-06', amount: 10 },
-    { id: 'c17', memberId: '5', date: '2025-11-06', amount: 10 },
-    { id: 'c18', memberId: '6', date: '2025-11-06', amount: 10 },
-    { id: 'c19', memberId: '1', date: '2025-11-08', amount: 10 },
-    { id: 'c20', memberId: '3', date: '2025-11-08', amount: 10 },
-    { id: 'c21', memberId: '4', date: '2025-11-08', amount: 10 },
-    { id: 'c22', memberId: '6', date: '2025-11-08', amount: 10 },
-    { id: 'c23', memberId: '1', date: '2025-11-11', amount: 10 },
-    { id: 'c24', memberId: '3', date: '2025-11-11', amount: 10 },
-    { id: 'c25', memberId: '4', date: '2025-11-11', amount: 10 },
-    { id: 'c26', memberId: '6', date: '2025-11-11', amount: 10 },
-    { id: 'c27', memberId: '1', date: '2025-11-12', amount: 10 },
-    { id: 'c28', memberId: '3', date: '2025-11-12', amount: 10 },
-    { id: 'c29', memberId: '4', date: '2025-11-12', amount: 10 },
-    { id: 'c30', memberId: '6', date: '2025-11-12', amount: 10 },
-    { id: 'c31', memberId: '1', date: '2025-11-13', amount: 10 },
-    { id: 'c32', memberId: '3', date: '2025-11-13', amount: 10 },
-    { id: 'c33', memberId: '4', date: '2025-11-13', amount: 10 },
-    { id: 'c34', memberId: '6', date: '2025-11-13', amount: 10 },
-    { id: 'c35', memberId: '1', date: '2025-11-15', amount: 10 },
-    { id: 'c36', memberId: '3', date: '2025-11-15', amount: 10 },
-    { id: 'c37', memberId: '4', date: '2025-11-15', amount: 10 },
-    { id: 'c38', memberId: '6', date: '2025-11-15', amount: 10 },
-  ]);
+  const [members, setMembers] = useLocalStorage<Member[]>('swim_fund_members', []);
+  const [contributions, setContributions] = useLocalStorage<Contribution[]>('swim_fund_contributions', []);
   const [goal, setGoal] = useLocalStorage<number>('swim_fund_goal', 5000);
   const [payingMember, setPayingMember] = useState<Member | null>(null);
   const [editingContribution, setEditingContribution] = useState<Contribution | null>(null);
@@ -71,16 +27,86 @@ const App: React.FC = () => {
   const [contributionToDelete, setContributionToDelete] = useState<Contribution | null>(null);
   const [page, setPage] = useState<Page>('dashboard');
 
+  useEffect(() => {
+    const loadDataFromFirestore = async () => {
+      try {
+        const membersSnapshot = await getDocs(collection(db, 'members'));
+        const loadedMembers: Member[] = membersSnapshot.docs.map(docSnap => {
+          const data = docSnap.data() as Member;
+          return {
+            id: docSnap.id,
+            name: data.name,
+            joinDate: data.joinDate,
+          };
+        });
+        if (loadedMembers.length > 0) {
+          setMembers(loadedMembers);
+        }
+
+        const contributionsSnapshot = await getDocs(collection(db, 'contributions'));
+        const loadedContributions: Contribution[] = contributionsSnapshot.docs.map(docSnap => {
+          const data = docSnap.data() as Contribution;
+          return {
+            id: docSnap.id,
+            memberId: data.memberId,
+            date: data.date,
+            amount: data.amount,
+          };
+        });
+        if (loadedContributions.length > 0) {
+          setContributions(loadedContributions);
+        }
+
+        const goalDocRef = doc(db, 'settings', 'global');
+        const goalSnapshot = await getDoc(goalDocRef);
+        if (goalSnapshot.exists()) {
+          const goalData = goalSnapshot.data() as { goal?: number };
+          if (typeof goalData.goal === 'number') {
+            setGoal(goalData.goal);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading data from Firestore', error);
+      }
+    };
+
+    loadDataFromFirestore();
+  }, [setMembers, setContributions, setGoal]);
+
   const CONTRIBUTION_AMOUNT = 10;
+
+  const handleSetGoal = (newGoal: number) => {
+    setGoal(newGoal);
+    const goalDocRef = doc(db, 'settings', 'global');
+    setDoc(goalDocRef, { goal: newGoal }).catch(error => {
+      console.error('Error saving goal to Firestore', error);
+    });
+  };
 
   const fundStartDate = useMemo(() => {
     if (contributions.length === 0) {
       return new Date().toISOString();
     }
-    const earliestDate = contributions.reduce((earliest, current) => {
+
+    const validContributions = contributions.filter(contribution => {
+      const date = new Date(contribution.date);
+      return !isNaN(date.getTime());
+    });
+
+    if (validContributions.length === 0) {
+      return new Date().toISOString();
+    }
+
+    const earliestContribution = validContributions.reduce((earliest, current) => {
       return new Date(current.date) < new Date(earliest.date) ? current : earliest;
     });
-    return new Date(earliestDate.date).toISOString();
+
+    const earliestDate = new Date(earliestContribution.date);
+    if (isNaN(earliestDate.getTime())) {
+      return new Date().toISOString();
+    }
+
+    return earliestDate.toISOString();
   }, [contributions]);
 
   const addMember = (name: string) => {
@@ -88,12 +114,16 @@ const App: React.FC = () => {
       alert("Member name cannot be empty or a duplicate.");
       return;
     }
+
     const newMember: Member = {
       id: new Date().getTime().toString(),
       name: name.trim(),
       joinDate: fundStartDate,
     };
     setMembers([...members, newMember]);
+    setDoc(doc(db, 'members', newMember.id), newMember).catch(error => {
+      console.error('Error saving member to Firestore', error);
+    });
   };
 
   const handleDeleteMember = (member: Member) => {
@@ -102,9 +132,21 @@ const App: React.FC = () => {
 
   const confirmDeleteMember = () => {
     if (!memberToDelete) return;
+    const memberId = memberToDelete.id;
     setMembers(members.filter(m => m.id !== memberToDelete.id));
     setContributions(contributions.filter(c => c.memberId !== memberToDelete.id));
     setMemberToDelete(null);
+
+    deleteDoc(doc(db, 'members', memberId)).catch(error => {
+      console.error('Error deleting member from Firestore', error);
+    });
+    contributions
+      .filter(c => c.memberId === memberId)
+      .forEach(c => {
+        deleteDoc(doc(db, 'contributions', c.id)).catch(error => {
+          console.error('Error deleting contribution from Firestore', error);
+        });
+      });
   };
 
   const addDailyContribution = (memberId: string) => {
@@ -120,6 +162,9 @@ const App: React.FC = () => {
       amount: CONTRIBUTION_AMOUNT,
     };
     setContributions([...contributions, newContribution]);
+    setDoc(doc(db, 'contributions', newContribution.id), newContribution).catch(error => {
+      console.error('Error saving contribution to Firestore', error);
+    });
   };
 
   const recordBalancePayment = (memberId: string, amount: number) => {
@@ -134,30 +179,45 @@ const App: React.FC = () => {
       amount: amount,
     };
     setContributions([...contributions, newContribution]);
+    setDoc(doc(db, 'contributions', newContribution.id), newContribution).catch(error => {
+      console.error('Error saving payment to Firestore', error);
+    });
     setPayingMember(null);
   };
 
   const handleSaveContribution = (id: string, newAmount: number, newDate: string, newMemberId: string) => {
-      if (id) {
-        // Editing existing contribution
-        setContributions(
-            contributions.map(c => 
-                c.id === id ? { ...c, amount: newAmount, date: newDate, memberId: newMemberId } : c
-            )
-        );
-      } else {
-        // Adding new contribution
-        const newContribution: Contribution = {
-          id: new Date().getTime().toString(),
-          memberId: newMemberId,
-          date: newDate,
-          amount: newAmount,
-        };
-        setContributions([...contributions, newContribution]);
-      }
-      setEditingContribution(null);
+    if (id) {
+      // Editing existing contribution
+      const updatedContribution: Contribution = {
+        id,
+        memberId: newMemberId,
+        date: newDate,
+        amount: newAmount,
+      };
+      setContributions(
+        contributions.map(c =>
+          c.id === id ? updatedContribution : c
+        )
+      );
+      setDoc(doc(db, 'contributions', id), updatedContribution).catch(error => {
+        console.error('Error updating contribution in Firestore', error);
+      });
+    } else {
+      // Adding new contribution
+      const newContribution: Contribution = {
+        id: new Date().getTime().toString(),
+        memberId: newMemberId,
+        date: newDate,
+        amount: newAmount,
+      };
+      setContributions([...contributions, newContribution]);
+      setDoc(doc(db, 'contributions', newContribution.id), newContribution).catch(error => {
+        console.error('Error saving new contribution to Firestore', error);
+      });
+    }
+    setEditingContribution(null);
   };
-  
+
   const handleOpenAddContributionModal = () => {
     setEditingContribution({
       id: '', // Empty ID signifies a new entry
@@ -168,89 +228,106 @@ const App: React.FC = () => {
   };
 
   const handleDeleteContribution = (contribution: Contribution) => {
-      setContributionToDelete(contribution);
+    setContributionToDelete(contribution);
   };
 
   const confirmDeleteContribution = () => {
     if (!contributionToDelete) return;
+    const id = contributionToDelete.id;
     setContributions(contributions.filter(c => c.id !== contributionToDelete.id));
     setContributionToDelete(null);
+    deleteDoc(doc(db, 'contributions', id)).catch(error => {
+      console.error('Error deleting contribution from Firestore', error);
+    });
   };
 
   const handleImportData = (csvData: string) => {
     const lines = csvData.trim().split('\n');
     const newContributions: Contribution[] = [];
+    const createdMembers: Member[] = [];
     let updatedMembers = [...members];
     const memberNameMap = new Map(updatedMembers.map(m => [m.name.toLowerCase(), m]));
 
     const linesToProcess = lines.filter(line => line.split(',').length === 3 && line.trim() !== '');
 
     if (linesToProcess.length === 0 && lines.length > 0) {
-        alert("Invalid data format. Please use 'Date,Member Name,Amount'.");
-        return;
+      alert("Invalid data format. Please use 'Date,Member Name,Amount'.");
+      return;
     }
 
     let invalidLines = 0;
 
     linesToProcess.forEach((line, index) => {
-        const [dateStr, name, amountStr] = line.split(',').map(s => s.trim());
-        
-        const amount = parseFloat(amountStr);
-        const date = new Date(dateStr);
+      const [dateStr, name, amountStr] = line.split(',').map(s => s.trim());
 
-        if (isNaN(amount) || amount <= 0 || !dateStr || isNaN(date.getTime())) {
-            console.warn(`Skipping invalid data on line: ${line}`);
-            invalidLines++;
-            return;
-        }
-        
-        const formattedDate = date.toISOString().split('T')[0];
+      const amount = parseFloat(amountStr);
+      const date = new Date(dateStr);
 
-        let member = memberNameMap.get(name.toLowerCase());
-        
-        if (!member) {
-            member = {
-                id: `${new Date().getTime()}-${name}`,
-                name: name,
-                joinDate: new Date(date).toISOString(), // Set join date to first contribution
-            };
-            updatedMembers.push(member);
-            memberNameMap.set(name.toLowerCase(), member);
-        }
+      if (isNaN(amount) || amount <= 0 || !dateStr || isNaN(date.getTime())) {
+        console.warn(`Skipping invalid data on line: ${line}`);
+        invalidLines++;
+        return;
+      }
 
-        const contributionExists = contributions.some(c => c.memberId === member!.id && c.date === formattedDate) ||
-                                   newContributions.some(c => c.memberId === member!.id && c.date === formattedDate);
+      const formattedDate = date.toISOString().split('T')[0];
 
-        if (!contributionExists) {
-            newContributions.push({
-                id: `${new Date().getTime()}-${index}`,
-                memberId: member!.id,
-                date: formattedDate,
-                amount: amount,
-            });
-        }
+      let member = memberNameMap.get(name.toLowerCase());
+
+      if (!member) {
+        member = {
+          id: `${new Date().getTime()}-${name}`,
+          name: name,
+          joinDate: new Date(date).toISOString(), // Set join date to first contribution
+        };
+        updatedMembers.push(member);
+        memberNameMap.set(name.toLowerCase(), member);
+        createdMembers.push(member);
+      }
+
+      const contributionExists = contributions.some(c => c.memberId === member!.id && c.date === formattedDate) ||
+        newContributions.some(c => c.memberId === member!.id && c.date === formattedDate);
+
+      if (!contributionExists) {
+        newContributions.push({
+          id: `${new Date().getTime()}-${index}`,
+          memberId: member!.id,
+          date: formattedDate,
+          amount: amount,
+        });
+      }
     });
-    
+
     const newMembersCount = updatedMembers.length - members.length;
     if (newMembersCount > 0) {
-        setMembers(updatedMembers);
+      setMembers(updatedMembers);
     }
     if (newContributions.length > 0) {
-        setContributions([...contributions, ...newContributions]);
+      setContributions([...contributions, ...newContributions]);
     }
+
+    createdMembers.forEach(member => {
+      setDoc(doc(db, 'members', member.id), member).catch(error => {
+        console.error('Error saving imported member to Firestore', error);
+      });
+    });
+    newContributions.forEach(contribution => {
+      setDoc(doc(db, 'contributions', contribution.id), contribution).catch(error => {
+        console.error('Error saving imported contribution to Firestore', error);
+      });
+    });
 
     let alertMessage = '';
     if (newContributions.length > 0 || newMembersCount > 0) {
-        alertMessage += `${newContributions.length} contributions imported successfully!`;
-        if (newMembersCount > 0) {
-            alertMessage += ` ${newMembersCount} new member(s) were added.`;
-        }
+      alertMessage += `${newContributions.length} contributions imported successfully!`;
+      if (newMembersCount > 0) {
+        alertMessage += ` ${newMembersCount} new member(s) were added.`;
+      }
     } else {
-        alertMessage = "No new data was imported. The contributions might already exist or the data was invalid.";
+      alertMessage = "No new data was imported. The contributions might already exist or the data was invalid.";
     }
 
     if (invalidLines > 0) {
-        alertMessage += `\n(${invalidLines} line(s) with invalid data were skipped.)`;
+      alertMessage += `\n(${invalidLines} line(s) with invalid data were skipped.)`;
     }
 
     alert(alertMessage);
@@ -258,7 +335,7 @@ const App: React.FC = () => {
 
   const { totalContributions, memberTotals, balances, outstandingBalance } = useMemo(() => {
     const total = contributions.reduce((acc, curr) => acc + curr.amount, 0);
-    
+
     const totals = new Map<string, number>();
     members.forEach(member => totals.set(member.id, 0));
     contributions.forEach(c => {
@@ -270,21 +347,21 @@ const App: React.FC = () => {
     let outstanding = 0;
 
     members.forEach(member => {
-        const contributionDays = countContributionDays(member.joinDate, today);
-        const expected = contributionDays * CONTRIBUTION_AMOUNT;
-        const actual = totals.get(member.id) || 0;
-        const balance = expected - actual;
-        balancesMap.set(member.id, balance);
-        if (balance > 0) {
-            outstanding += balance;
-        }
+      const contributionDays = countContributionDays(member.joinDate, today);
+      const expected = contributionDays * CONTRIBUTION_AMOUNT;
+      const actual = totals.get(member.id) || 0;
+      const balance = expected - actual;
+      balancesMap.set(member.id, balance);
+      if (balance > 0) {
+        outstanding += balance;
+      }
     });
 
-    return { 
-        totalContributions: total, 
-        memberTotals: totals,
-        balances: balancesMap,
-        outstandingBalance: outstanding
+    return {
+      totalContributions: total,
+      memberTotals: totals,
+      balances: balancesMap,
+      outstandingBalance: outstanding
     };
   }, [contributions, members]);
 
@@ -299,9 +376,10 @@ const App: React.FC = () => {
               goalAmount={goal}
               memberCount={members.length}
               outstandingBalance={outstandingBalance}
-              onSetGoal={setGoal}
+              onSetGoal={handleSetGoal}
               onImportData={handleImportData}
             />
+
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
                 <DailyTracker
