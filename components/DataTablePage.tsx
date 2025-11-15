@@ -72,13 +72,10 @@ const DataTablePage: React.FC<DataTablePageProps> = ({
     else if (event.key === 'Escape') setEditingCell(null);
   };
   
-  // --- STATE & LOGIC FOR MOBILE CARD VIEW ---
+  // --- STATE & LOGIC FOR MOBILE CARD VIEW & EXPORT ---
   const memberMap = useMemo(() => new Map(members.map(m => [m.id, m.name])), [members]);
   
   const contributionsByDate = useMemo(() => {
-    // FIX: Explicitly type the accumulator and current value in the `reduce` function
-    // to help TypeScript correctly infer the type of the `grouped` map. This
-    // resolves an issue where the sort callback parameters were inferred as `unknown`.
     const grouped = contributions.reduce((acc: Map<string, Contribution[]>, c: Contribution) => {
         if (!acc.has(c.date)) {
             acc.set(c.date, []);
@@ -87,7 +84,8 @@ const DataTablePage: React.FC<DataTablePageProps> = ({
         return acc;
     }, new Map<string, Contribution[]>());
     
-    const sortedDates = Array.from(grouped.keys()).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    // FIX: Explicitly type `a` and `b` as `string` for the sort compare function to resolve a TypeScript type inference issue.
+    const sortedDates = Array.from(grouped.keys()).sort((a: string, b: string) => new Date(b).getTime() - new Date(a).getTime());
     
     return sortedDates.map(date => ({
         date,
@@ -95,20 +93,65 @@ const DataTablePage: React.FC<DataTablePageProps> = ({
     }));
   }, [contributions, memberMap]);
 
+  const handleExportData = () => {
+    if (contributions.length === 0) {
+      alert("No data to export.");
+      return;
+    }
+
+    const sortedContributions = [...contributions].sort((a, b) => {
+      const dateComparison = a.date.localeCompare(b.date);
+      if (dateComparison !== 0) return dateComparison;
+      const memberA = memberMap.get(a.memberId) || '';
+      const memberB = memberMap.get(b.memberId) || '';
+      return memberA.localeCompare(memberB);
+    });
+
+    const csvHeader = "Date,Member,Amount\n";
+    const csvRows = sortedContributions.map(c => {
+      const memberName = memberMap.get(c.memberId) || 'Unknown Member';
+      const safeMemberName = `"${memberName.replace(/"/g, '""')}"`;
+      return `${c.date},${safeMemberName},${c.amount}`;
+    }).join("\n");
+
+    const csvContent = csvHeader + csvRows;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute("download", "swim-fund-contributions.csv");
+    document.body.appendChild(link);
+    link.click();
+    
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <Card>
-      <div className="p-5 flex justify-between items-center">
+      <div className="p-5 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
           <h2 className="text-xl font-bold text-gray-800">Contributions Data</h2>
           <p className="text-sm text-gray-500">Manage all contribution records.</p>
         </div>
-        <button
-          onClick={onAddNewContribution}
-          className="px-4 py-2 text-sm font-medium text-white bg-violet-600 border border-transparent rounded-md shadow-sm hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
-        >
-          Add Record
-        </button>
+        <div className="flex items-center gap-3 self-end sm:self-auto">
+           <button
+            onClick={handleExportData}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-violet-700 bg-violet-100 border border-transparent rounded-md shadow-sm hover:bg-violet-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            <span>Export CSV</span>
+          </button>
+          <button
+            onClick={onAddNewContribution}
+            className="px-4 py-2 text-sm font-medium text-white bg-violet-600 border border-transparent rounded-md shadow-sm hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
+          >
+            Add Record
+          </button>
+        </div>
       </div>
 
       {/* --- DESKTOP PIVOT TABLE VIEW --- */}
