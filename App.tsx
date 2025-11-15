@@ -336,6 +336,7 @@ const App: React.FC = () => {
             onSaveContribution={handleSaveContribution}
             onDeleteContribution={handleDeleteContribution}
             onAddNewContribution={handleOpenAddContributionModal}
+            onEditContribution={setEditingContribution}
           />
         )}
       </main>
