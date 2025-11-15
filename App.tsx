@@ -73,6 +73,16 @@ const App: React.FC = () => {
 
   const CONTRIBUTION_AMOUNT = 10;
 
+  const fundStartDate = useMemo(() => {
+    if (contributions.length === 0) {
+      return new Date().toISOString();
+    }
+    const earliestDate = contributions.reduce((earliest, current) => {
+      return new Date(current.date) < new Date(earliest.date) ? current : earliest;
+    });
+    return new Date(earliestDate.date).toISOString();
+  }, [contributions]);
+
   const addMember = (name: string) => {
     if (name.trim() === '' || members.some(m => m.name.toLowerCase() === name.trim().toLowerCase())) {
       alert("Member name cannot be empty or a duplicate.");
@@ -81,7 +91,7 @@ const App: React.FC = () => {
     const newMember: Member = {
       id: new Date().getTime().toString(),
       name: name.trim(),
-      joinDate: new Date().toISOString(),
+      joinDate: fundStartDate,
     };
     setMembers([...members, newMember]);
   };
