@@ -1,0 +1,5 @@
+{
+  "name": "Swim Fund Tracker",
+  "description": "A simple and reliable fund-tracking tool designed to help a group manage daily contributions for an upcoming swimming vacation. The treasurer can easily track who paid their ₱10 each day, view individual and total contributions, and monitor overall savings progress toward the trip.",
+  "requestFramePermissions": []
+}
