@@ -11,17 +11,27 @@ export const countContributionDays = (startDateStr: string, endDateStr: string):
   const startDate = new Date(startDateStr);
   const endDate = new Date(endDateStr);
 
-  // Set to midnight UTC to compare just dates and avoid timezone issues
+  // Set to midnight UTC to avoid timezone issues during iteration
   startDate.setUTCHours(0, 0, 0, 0);
   endDate.setUTCHours(0, 0, 0, 0);
-
+  
   if (startDate > endDate) {
     return 0;
   }
+
+  let count = 0;
+  const currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    const dayOfWeek = currentDate.getUTCDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+
+    // Exclude Monday (1), Friday (5), and Sunday (0)
+    if (dayOfWeek !== 0 && dayOfWeek !== 1 && dayOfWeek !== 5) {
+      count++;
+    }
+    
+    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+  }
   
-  const diffTime = endDate.getTime() - startDate.getTime();
-  // Add 1 to make the count inclusive of the start day
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
-  
-  return diffDays;
+  return count;
 };

@@ -6,7 +6,7 @@ interface ContributionLogProps {
   contributions: Contribution[];
   members: Member[];
   onEdit: (contribution: Contribution) => void;
-  onDelete: (id: string) => void;
+  onDelete: (contribution: Contribution) => void;
 }
 
 const ContributionLog: React.FC<ContributionLogProps> = ({ contributions, members, onEdit, onDelete }) => {
@@ -41,7 +41,7 @@ const ContributionLog: React.FC<ContributionLogProps> = ({ contributions, member
                     </svg>
                   </button>
                   <button
-                    onClick={() => onDelete(c.id)}
+                    onClick={() => onDelete(c)}
                     className="p-1.5 rounded-full text-gray-500 hover:bg-red-100 hover:text-red-600"
                     aria-label="Delete contribution"
                   >

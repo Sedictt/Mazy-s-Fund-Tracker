@@ -5,7 +5,7 @@ import Modal from './common/Modal';
 interface EditContributionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  contribution: Contribution;
+  contribution: Contribution | null; // Can be null for adding
   members: Member[];
   onSave: (id: string, amount: number, date: string, memberId: string) => void;
 }
@@ -16,6 +16,8 @@ const EditContributionModal: React.FC<EditContributionModalProps> = ({
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState('');
   const [memberId, setMemberId] = useState('');
+
+  const isEditMode = contribution && contribution.id;
 
   useEffect(() => {
     if (contribution) {
@@ -39,17 +41,21 @@ const EditContributionModal: React.FC<EditContributionModalProps> = ({
         alert('Please select a member.');
         return;
     }
-    onSave(contribution.id, numericAmount, date, memberId);
+    onSave(contribution?.id || '', numericAmount, date, memberId);
   };
   
-  const editIcon = (
+  const icon = isEditMode ? (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+    </svg>
+  ) : (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
     </svg>
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Edit Contribution" icon={editIcon}>
+    <Modal isOpen={isOpen} onClose={onClose} title={isEditMode ? "Edit Contribution" : "Add Contribution"} icon={icon}>
       <div className="mt-4 space-y-4">
         
         <div>
@@ -109,7 +115,7 @@ const EditContributionModal: React.FC<EditContributionModalProps> = ({
           onClick={handleSave}
           className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-violet-600 border border-transparent rounded-md shadow-sm hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
         >
-          Save Changes
+          {isEditMode ? 'Save Changes' : 'Add Contribution'}
         </button>
       </div>
     </Modal>

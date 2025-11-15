@@ -9,7 +9,10 @@ import ContributionLog from './components/ContributionLog';
 import PayBalanceModal from './components/PayBalanceModal';
 import EditContributionModal from './components/EditContributionModal';
 import ConfirmationModal from './components/common/ConfirmationModal';
+import DataTablePage from './components/DataTablePage';
 import { getTodayDateString, countContributionDays } from './utils/date';
+
+type Page = 'dashboard' | 'dataTable';
 
 const App: React.FC = () => {
   const [members, setMembers] = useLocalStorage<Member[]>('swim_fund_members', [
@@ -65,7 +68,9 @@ const App: React.FC = () => {
   const [payingMember, setPayingMember] = useState<Member | null>(null);
   const [editingContribution, setEditingContribution] = useState<Contribution | null>(null);
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
-  
+  const [contributionToDelete, setContributionToDelete] = useState<Contribution | null>(null);
+  const [page, setPage] = useState<Page>('dashboard');
+
   const CONTRIBUTION_AMOUNT = 10;
 
   const addMember = (name: string) => {
@@ -92,8 +97,7 @@ const App: React.FC = () => {
     setMemberToDelete(null);
   };
 
-
-  const addContribution = (memberId: string) => {
+  const addDailyContribution = (memberId: string) => {
     const today = getTodayDateString();
     const hasPaidToday = contributions.some(c => c.memberId === memberId && c.date === today);
     if (hasPaidToday) {
@@ -107,7 +111,7 @@ const App: React.FC = () => {
     };
     setContributions([...contributions, newContribution]);
   };
-  
+
   const recordBalancePayment = (memberId: string, amount: number) => {
     if (amount <= 0) {
       alert("Payment amount must be positive.");
@@ -123,19 +127,44 @@ const App: React.FC = () => {
     setPayingMember(null);
   };
 
-  const handleUpdateContribution = (id: string, newAmount: number, newDate: string, newMemberId: string) => {
-      setContributions(
-          contributions.map(c => 
-              c.id === id ? { ...c, amount: newAmount, date: newDate, memberId: newMemberId } : c
-          )
-      );
+  const handleSaveContribution = (id: string, newAmount: number, newDate: string, newMemberId: string) => {
+      if (id) {
+        // Editing existing contribution
+        setContributions(
+            contributions.map(c => 
+                c.id === id ? { ...c, amount: newAmount, date: newDate, memberId: newMemberId } : c
+            )
+        );
+      } else {
+        // Adding new contribution
+        const newContribution: Contribution = {
+          id: new Date().getTime().toString(),
+          memberId: newMemberId,
+          date: newDate,
+          amount: newAmount,
+        };
+        setContributions([...contributions, newContribution]);
+      }
       setEditingContribution(null);
   };
+  
+  const handleOpenAddContributionModal = () => {
+    setEditingContribution({
+      id: '', // Empty ID signifies a new entry
+      memberId: members[0]?.id || '',
+      date: getTodayDateString(),
+      amount: CONTRIBUTION_AMOUNT,
+    });
+  };
 
-  const handleDeleteContribution = (id: string) => {
-      if (window.confirm('Are you sure you want to delete this contribution record? This action cannot be undone.')) {
-          setContributions(contributions.filter(c => c.id !== id));
-      }
+  const handleDeleteContribution = (contribution: Contribution) => {
+      setContributionToDelete(contribution);
+  };
+
+  const confirmDeleteContribution = () => {
+    if (!contributionToDelete) return;
+    setContributions(contributions.filter(c => c.id !== contributionToDelete.id));
+    setContributionToDelete(null);
   };
 
   const handleImportData = (csvData: string) => {
@@ -251,43 +280,54 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-violet-50 text-gray-800">
-      <Header />
+      <Header page={page} onSetPage={setPage} />
       <main className="container mx-auto p-4 md:p-6 lg:p-8">
-        <Dashboard
-          totalContributions={totalContributions}
-          goalAmount={goal}
-          memberCount={members.length}
-          outstandingBalance={outstandingBalance}
-          onSetGoal={setGoal}
-          onImportData={handleImportData}
-        />
-
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <DailyTracker
-              members={members}
-              contributions={contributions}
-              onAddContribution={addContribution}
-              contributionAmount={CONTRIBUTION_AMOUNT}
+        {page === 'dashboard' ? (
+          <>
+            <Dashboard
+              totalContributions={totalContributions}
+              goalAmount={goal}
+              memberCount={members.length}
+              outstandingBalance={outstandingBalance}
+              onSetGoal={setGoal}
+              onImportData={handleImportData}
             />
-          </div>
-          <div className="space-y-8">
-            <MemberList
-              members={members}
-              memberTotals={memberTotals}
-              balances={balances}
-              onAddMember={addMember}
-              onPayBalance={setPayingMember}
-              onDeleteMember={handleDeleteMember}
-            />
-            <ContributionLog
-              contributions={contributions}
-              members={members}
-              onEdit={setEditingContribution}
-              onDelete={handleDeleteContribution}
-            />
-          </div>
-        </div>
+            <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <DailyTracker
+                  members={members}
+                  contributions={contributions}
+                  onAddContribution={addDailyContribution}
+                  contributionAmount={CONTRIBUTION_AMOUNT}
+                />
+              </div>
+              <div className="space-y-8">
+                <MemberList
+                  members={members}
+                  memberTotals={memberTotals}
+                  balances={balances}
+                  onAddMember={addMember}
+                  onPayBalance={setPayingMember}
+                  onDeleteMember={handleDeleteMember}
+                />
+                <ContributionLog
+                  contributions={contributions}
+                  members={members}
+                  onEdit={setEditingContribution}
+                  onDelete={handleDeleteContribution}
+                />
+              </div>
+            </div>
+          </>
+        ) : (
+          <DataTablePage
+            contributions={contributions}
+            members={members}
+            onSaveContribution={handleSaveContribution}
+            onDeleteContribution={handleDeleteContribution}
+            onAddNewContribution={handleOpenAddContributionModal}
+          />
+        )}
       </main>
       
       {payingMember && (
@@ -306,7 +346,7 @@ const App: React.FC = () => {
             onClose={() => setEditingContribution(null)}
             contribution={editingContribution}
             members={members}
-            onSave={handleUpdateContribution}
+            onSave={handleSaveContribution}
         />
       )}
 
@@ -319,7 +359,16 @@ const App: React.FC = () => {
           message="This will permanently delete the member and all of their contribution records. This action cannot be undone."
         />
       )}
-
+      
+      {contributionToDelete && (
+          <ConfirmationModal
+            isOpen={!!contributionToDelete}
+            onClose={() => setContributionToDelete(null)}
+            onConfirm={confirmDeleteContribution}
+            title="Delete Contribution?"
+            message="Are you sure you want to delete this contribution record? This action cannot be undone."
+          />
+      )}
     </div>
   );
 };
