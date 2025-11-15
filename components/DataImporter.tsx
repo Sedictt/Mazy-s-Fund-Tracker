@@ -39,32 +39,33 @@ const DataImporter: React.FC<DataImporterProps> = ({ onImport }) => {
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Import Pre-existing Data" icon={importIcon}>
         <div className="mt-4 space-y-4">
-            <p className="text-sm text-gray-600">
-                Paste your data from a spreadsheet. The format should be CSV (Comma Separated Values) with three columns: <strong>Date, Member Name, Amount</strong>.
-            </p>
-            <p className="text-sm text-gray-600">
-                The date format should be understandable by JavaScript's `new Date()`, like YYYY-MM-DD.
-            </p>
-            <p className="text-sm text-gray-600">
-                Example:
-                <br />
-                <code className="text-xs bg-gray-100 p-2 rounded block whitespace-pre">
-{`2024-05-20,Alice,10
-2024-05-20,Bob,10
-2024-05-21,Alice,10`}
-                </code>
-            </p>
+            <div className="text-sm text-gray-600 space-y-3">
+                <p>Paste data from a spreadsheet. It must have 3 columns:</p>
+                <ul className="list-disc list-inside bg-gray-50 p-3 rounded-md">
+                    <li><strong>Date</strong> (e.g., YYYY-MM-DD)</li>
+                    <li><strong>Member Name</strong></li>
+                    <li><strong>Amount</strong></li>
+                </ul>
+                <div>
+                    <p>Example:</p>
+                    <code className="text-xs bg-gray-100 p-2 rounded block whitespace-pre-wrap mt-1">
+{`2024-07-01,Alice,10
+2024-07-01,Bob,10
+2024-07-02,Alice,10`}
+                    </code>
+                </div>
+            </div>
             <div>
-                <label htmlFor="csvData" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="csvData" className="sr-only">
                     Paste CSV Data
                 </label>
                 <textarea
                     id="csvData"
-                    rows={8}
+                    rows={6}
                     value={csvData}
                     onChange={(e) => setCsvData(e.target.value)}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-violet-500 focus:border-violet-500 sm:text-sm"
-                    placeholder={`e.g.\n2024-05-20,Alice,10\n2024-05-20,Bob,10`}
+                    placeholder="Paste your data here..."
                     aria-label="Paste CSV Data"
                 />
             </div>

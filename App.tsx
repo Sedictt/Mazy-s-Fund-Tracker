@@ -13,13 +13,54 @@ import { getTodayDateString, countContributionDays } from './utils/date';
 
 const App: React.FC = () => {
   const [members, setMembers] = useLocalStorage<Member[]>('swim_fund_members', [
-    { id: '1', name: 'Alice', joinDate: '2024-07-01T00:00:00.000Z' },
-    { id: '2', name: 'Bob', joinDate: '2024-07-01T00:00:00.000Z' },
-    { id: '3', name: 'Charlie', joinDate: '2024-07-03T00:00:00.000Z' },
-    { id: '4', name: 'Diana', joinDate: new Date().toISOString() },
+    { id: '1', name: 'Margaux', joinDate: '2025-11-04T00:00:00.000Z' },
+    { id: '2', name: 'Lorraine', joinDate: '2025-11-04T00:00:00.000Z' },
+    { id: '3', name: 'Raineer', joinDate: '2025-11-04T00:00:00.000Z' },
+    { id: '4', name: 'Deign', joinDate: '2025-11-04T00:00:00.000Z' },
+    { id: '5', name: 'Jv', joinDate: '2025-11-04T00:00:00.000Z' },
+    { id: '6', name: 'Bryan', joinDate: '2025-11-04T00:00:00.000Z' },
   ]);
 
-  const [contributions, setContributions] = useLocalStorage<Contribution[]>('swim_fund_contributions', []);
+  const [contributions, setContributions] = useLocalStorage<Contribution[]>('swim_fund_contributions', [
+    { id: 'c1', memberId: '1', date: '2025-11-04', amount: 10 },
+    { id: 'c2', memberId: '2', date: '2025-11-04', amount: 10 },
+    { id: 'c3', memberId: '3', date: '2025-11-04', amount: 10 },
+    { id: 'c4', memberId: '4', date: '2025-11-04', amount: 10 },
+    { id: 'c5', memberId: '5', date: '2025-11-04', amount: 10 },
+    { id: 'c6', memberId: '6', date: '2025-11-04', amount: 10 },
+    { id: 'c7', memberId: '1', date: '2025-11-05', amount: 10 },
+    { id: 'c8', memberId: '2', date: '2025-11-05', amount: 10 },
+    { id: 'c9', memberId: '3', date: '2025-11-05', amount: 10 },
+    { id: 'c10', memberId: '4', date: '2025-11-05', amount: 10 },
+    { id: 'c11', memberId: '5', date: '2025-11-05', amount: 10 },
+    { id: 'c12', memberId: '6', date: '2025-11-05', amount: 10 },
+    { id: 'c13', memberId: '1', date: '2025-11-06', amount: 10 },
+    { id: 'c14', memberId: '2', date: '2025-11-06', amount: 10 },
+    { id: 'c15', memberId: '3', date: '2025-11-06', amount: 10 },
+    { id: 'c16', memberId: '4', date: '2025-11-06', amount: 10 },
+    { id: 'c17', memberId: '5', date: '2025-11-06', amount: 10 },
+    { id: 'c18', memberId: '6', date: '2025-11-06', amount: 10 },
+    { id: 'c19', memberId: '1', date: '2025-11-08', amount: 10 },
+    { id: 'c20', memberId: '3', date: '2025-11-08', amount: 10 },
+    { id: 'c21', memberId: '4', date: '2025-11-08', amount: 10 },
+    { id: 'c22', memberId: '6', date: '2025-11-08', amount: 10 },
+    { id: 'c23', memberId: '1', date: '2025-11-11', amount: 10 },
+    { id: 'c24', memberId: '3', date: '2025-11-11', amount: 10 },
+    { id: 'c25', memberId: '4', date: '2025-11-11', amount: 10 },
+    { id: 'c26', memberId: '6', date: '2025-11-11', amount: 10 },
+    { id: 'c27', memberId: '1', date: '2025-11-12', amount: 10 },
+    { id: 'c28', memberId: '3', date: '2025-11-12', amount: 10 },
+    { id: 'c29', memberId: '4', date: '2025-11-12', amount: 10 },
+    { id: 'c30', memberId: '6', date: '2025-11-12', amount: 10 },
+    { id: 'c31', memberId: '1', date: '2025-11-13', amount: 10 },
+    { id: 'c32', memberId: '3', date: '2025-11-13', amount: 10 },
+    { id: 'c33', memberId: '4', date: '2025-11-13', amount: 10 },
+    { id: 'c34', memberId: '6', date: '2025-11-13', amount: 10 },
+    { id: 'c35', memberId: '1', date: '2025-11-15', amount: 10 },
+    { id: 'c36', memberId: '3', date: '2025-11-15', amount: 10 },
+    { id: 'c37', memberId: '4', date: '2025-11-15', amount: 10 },
+    { id: 'c38', memberId: '6', date: '2025-11-15', amount: 10 },
+  ]);
   const [goal, setGoal] = useLocalStorage<number>('swim_fund_goal', 5000);
   const [payingMember, setPayingMember] = useState<Member | null>(null);
   const [editingContribution, setEditingContribution] = useState<Contribution | null>(null);
