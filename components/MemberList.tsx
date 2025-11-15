@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Member } from '../types';
 import Card from './common/Card';
@@ -10,6 +9,7 @@ interface MemberListProps {
   balances: Map<string, number>;
   onAddMember: (name: string) => void;
   onPayBalance: (member: Member) => void;
+  onDeleteMember: (id: string) => void;
 }
 
 const BalanceStatus: React.FC<{ balance: number }> = ({ balance }) => {
@@ -31,7 +31,7 @@ const BalanceStatus: React.FC<{ balance: number }> = ({ balance }) => {
 };
 
 
-const MemberList: React.FC<MemberListProps> = ({ members, memberTotals, balances, onAddMember, onPayBalance }) => {
+const MemberList: React.FC<MemberListProps> = ({ members, memberTotals, balances, onAddMember, onPayBalance, onDeleteMember }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newMemberName, setNewMemberName] = useState('');
 
@@ -60,13 +60,24 @@ const MemberList: React.FC<MemberListProps> = ({ members, memberTotals, balances
           {members.map((member) => {
             const balance = balances.get(member.id) || 0;
             return (
-              <li key={member.id} className="px-5 py-3">
+              <li key={member.id} className="group px-5 py-3">
                 <div className="flex items-center justify-between">
-                    <div>
-                        <p className="font-medium text-gray-800">{member.name}</p>
-                        <p className="text-sm text-gray-500">
-                            Total Contributed: ₱{(memberTotals.get(member.id) || 0).toLocaleString()}
-                        </p>
+                    <div className="flex items-center space-x-2">
+                        <div>
+                            <p className="font-medium text-gray-800">{member.name}</p>
+                            <p className="text-sm text-gray-500">
+                                Total Contributed: ₱{(memberTotals.get(member.id) || 0).toLocaleString()}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => onDeleteMember(member.id)}
+                            className="p-1.5 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label={`Delete ${member.name}`}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
                     </div>
                     <div className="text-right">
                        <BalanceStatus balance={balance} />

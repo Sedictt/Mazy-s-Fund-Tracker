@@ -7,6 +7,7 @@ import DailyTracker from './components/DailyTracker';
 import MemberList from './components/MemberList';
 import ContributionLog from './components/ContributionLog';
 import PayBalanceModal from './components/PayBalanceModal';
+import EditContributionModal from './components/EditContributionModal';
 import { getTodayDateString, countContributionDays } from './utils/date';
 
 const App: React.FC = () => {
@@ -20,6 +21,7 @@ const App: React.FC = () => {
   const [contributions, setContributions] = useLocalStorage<Contribution[]>('swim_fund_contributions', []);
   const [goal, setGoal] = useLocalStorage<number>('swim_fund_goal', 5000);
   const [payingMember, setPayingMember] = useState<Member | null>(null);
+  const [editingContribution, setEditingContribution] = useState<Contribution | null>(null);
   
   const CONTRIBUTION_AMOUNT = 10;
 
@@ -34,6 +36,16 @@ const App: React.FC = () => {
       joinDate: new Date().toISOString(),
     };
     setMembers([...members, newMember]);
+  };
+
+  const handleDeleteMember = (id: string) => {
+    const memberToDelete = members.find(m => m.id === id);
+    if (!memberToDelete) return;
+
+    if (window.confirm(`Are you sure you want to delete ${memberToDelete.name}? All of their contribution records will also be deleted. This action cannot be undone.`)) {
+        setMembers(members.filter(m => m.id !== id));
+        setContributions(contributions.filter(c => c.memberId !== id));
+    }
   };
 
   const addContribution = (memberId: string) => {
@@ -64,6 +76,21 @@ const App: React.FC = () => {
     };
     setContributions([...contributions, newContribution]);
     setPayingMember(null);
+  };
+
+  const handleUpdateContribution = (id: string, newAmount: number, newDate: string, newMemberId: string) => {
+      setContributions(
+          contributions.map(c => 
+              c.id === id ? { ...c, amount: newAmount, date: newDate, memberId: newMemberId } : c
+          )
+      );
+      setEditingContribution(null);
+  };
+
+  const handleDeleteContribution = (id: string) => {
+      if (window.confirm('Are you sure you want to delete this contribution record? This action cannot be undone.')) {
+          setContributions(contributions.filter(c => c.id !== id));
+      }
   };
 
   const handleImportData = (csvData: string) => {
@@ -206,10 +233,13 @@ const App: React.FC = () => {
               balances={balances}
               onAddMember={addMember}
               onPayBalance={setPayingMember}
+              onDeleteMember={handleDeleteMember}
             />
             <ContributionLog
               contributions={contributions}
               members={members}
+              onEdit={setEditingContribution}
+              onDelete={handleDeleteContribution}
             />
           </div>
         </div>
@@ -222,6 +252,16 @@ const App: React.FC = () => {
             member={payingMember}
             balanceOwed={balances.get(payingMember.id) || 0}
             onRecordPayment={recordBalancePayment}
+        />
+      )}
+
+      {editingContribution && (
+        <EditContributionModal
+            isOpen={!!editingContribution}
+            onClose={() => setEditingContribution(null)}
+            contribution={editingContribution}
+            members={members}
+            onSave={handleUpdateContribution}
         />
       )}
 
