@@ -11,6 +11,7 @@ import EditContributionModal from './components/EditContributionModal';
 import ConfirmationModal from './components/common/ConfirmationModal';
 import DataTablePage from './components/DataTablePage';
 import { getTodayDateString, countContributionDays } from './utils/date';
+import { saveContributionToFirestore, deleteContributionFromFirestore, saveMultipleContributionsToFirestore } from './firestoreContributions';
 
 type Page = 'dashboard' | 'dataTable';
 
@@ -120,6 +121,9 @@ const App: React.FC = () => {
       amount: CONTRIBUTION_AMOUNT,
     };
     setContributions([...contributions, newContribution]);
+    saveContributionToFirestore(newContribution).catch(error => {
+      console.error('Failed to save contribution to Firestore', error);
+    });
   };
 
   const recordBalancePayment = (memberId: string, amount: number) => {
@@ -135,16 +139,28 @@ const App: React.FC = () => {
     };
     setContributions([...contributions, newContribution]);
     setPayingMember(null);
+    saveContributionToFirestore(newContribution).catch(error => {
+      console.error('Failed to save balance payment to Firestore', error);
+    });
   };
 
   const handleSaveContribution = (id: string, newAmount: number, newDate: string, newMemberId: string) => {
       if (id) {
         // Editing existing contribution
+        const updatedContribution: Contribution = {
+          id,
+          memberId: newMemberId,
+          date: newDate,
+          amount: newAmount,
+        };
         setContributions(
             contributions.map(c => 
-                c.id === id ? { ...c, amount: newAmount, date: newDate, memberId: newMemberId } : c
+                c.id === id ? updatedContribution : c
             )
         );
+        saveContributionToFirestore(updatedContribution).catch(error => {
+          console.error('Failed to save contribution to Firestore', error);
+        });
       } else {
         // Adding new contribution
         const newContribution: Contribution = {
@@ -154,6 +170,9 @@ const App: React.FC = () => {
           amount: newAmount,
         };
         setContributions([...contributions, newContribution]);
+        saveContributionToFirestore(newContribution).catch(error => {
+          console.error('Failed to save contribution to Firestore', error);
+        });
       }
       setEditingContribution(null);
   };
@@ -174,6 +193,9 @@ const App: React.FC = () => {
   const confirmDeleteContribution = () => {
     if (!contributionToDelete) return;
     setContributions(contributions.filter(c => c.id !== contributionToDelete.id));
+    deleteContributionFromFirestore(contributionToDelete.id).catch(error => {
+      console.error('Failed to delete contribution from Firestore', error);
+    });
     setContributionToDelete(null);
   };
 
@@ -237,6 +259,9 @@ const App: React.FC = () => {
     }
     if (newContributions.length > 0) {
         setContributions([...contributions, ...newContributions]);
+        saveMultipleContributionsToFirestore(newContributions).catch(error => {
+            console.error('Failed to save imported contributions to Firestore', error);
+        });
     }
 
     let alertMessage = '';
