@@ -1,4 +1,4 @@
-import { collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Contribution } from './types';
 
@@ -16,4 +16,9 @@ export async function deleteContributionFromFirestore(id: string): Promise<void>
 
 export async function saveMultipleContributionsToFirestore(contributions: Contribution[]): Promise<void> {
   await Promise.all(contributions.map(saveContributionToFirestore));
+}
+
+export async function loadContributionsFromFirestore(): Promise<Contribution[]> {
+  const snapshot = await getDocs(contributionsCollection);
+  return snapshot.docs.map(docSnap => docSnap.data() as Contribution);
 }

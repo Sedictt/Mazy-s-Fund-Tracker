@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+
 import { Member, Contribution } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
 import Header from './components/Header';
@@ -11,7 +12,7 @@ import EditContributionModal from './components/EditContributionModal';
 import ConfirmationModal from './components/common/ConfirmationModal';
 import DataTablePage from './components/DataTablePage';
 import { getTodayDateString, countContributionDays } from './utils/date';
-import { saveContributionToFirestore, deleteContributionFromFirestore, saveMultipleContributionsToFirestore } from './firestoreContributions';
+import { saveContributionToFirestore, deleteContributionFromFirestore, saveMultipleContributionsToFirestore, loadContributionsFromFirestore } from './firestoreContributions';
 
 type Page = 'dashboard' | 'dataTable';
 
@@ -73,6 +74,18 @@ const App: React.FC = () => {
   const [page, setPage] = useState<Page>('dashboard');
 
   const CONTRIBUTION_AMOUNT = 10;
+
+  useEffect(() => {
+    loadContributionsFromFirestore()
+      .then(fetched => {
+        if (fetched.length > 0) {
+          setContributions(fetched);
+        }
+      })
+      .catch(error => {
+        console.error('Failed to load contributions from Firestore', error);
+      });
+  }, []);
 
   const fundStartDate = useMemo(() => {
     if (contributions.length === 0) {
