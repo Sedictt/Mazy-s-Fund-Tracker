@@ -58,8 +58,12 @@ const DataTablePage: React.FC<DataTablePageProps> = ({
     const isDeletion = originalContribution && (isNaN(newAmount) || newAmount <= 0);
     const isUpdate = originalContribution && !isNaN(newAmount) && newAmount > 0 && originalContribution.amount !== newAmount;
 
-    if (isNewEntry || isUpdate) {
-        onSaveContribution(originalContribution?.id || '', newAmount, date, memberId);
+    if (isNewEntry) {
+        // For new entries, create a contribution for this specific date and member
+        onSaveContribution('', newAmount, date, memberId);
+    } else if (isUpdate) {
+        // For updates, use the ORIGINAL contribution's date and memberId to avoid moving it
+        onSaveContribution(originalContribution.id, newAmount, originalContribution.date, originalContribution.memberId);
     } else if (isDeletion) {
         onDeleteContribution(originalContribution);
     }
