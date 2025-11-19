@@ -12,6 +12,7 @@ import ConfirmationModal from './components/common/ConfirmationModal';
 import DataTablePage from './components/DataTablePage';
 import { getTodayDateString, countContributionDays } from './utils/date';
 import { saveContributionToFirestore, deleteContributionFromFirestore, saveMultipleContributionsToFirestore, loadContributionsFromFirestore } from './firestoreContributions';
+import { loadMembersFromFirestore, saveMultipleMembersToFirestore, deleteMemberFromFirestore } from './firestoreMembers';
 
 type Page = 'dashboard' | 'dataTable';
 
@@ -37,6 +38,16 @@ const App: React.FC = () => {
       .catch(error => {
         console.error('Failed to load contributions from Firestore', error);
       });
+    
+    loadMembersFromFirestore()
+      .then(fetched => {
+        if (fetched.length > 0) {
+          setMembers(fetched);
+        }
+      })
+      .catch(error => {
+        console.error('Failed to load members from Firestore', error);
+      });
   }, []);
 
   const fundStartDate = useMemo(() => {
@@ -60,6 +71,9 @@ const App: React.FC = () => {
       joinDate: fundStartDate,
     };
     setMembers([...members, newMember]);
+    saveMultipleMembersToFirestore([newMember]).catch(error => {
+      console.error('Failed to save member to Firestore', error);
+    });
   };
 
   const handleDeleteMember = (member: Member) => {
@@ -70,6 +84,9 @@ const App: React.FC = () => {
     if (!memberToDelete) return;
     setMembers(members.filter(m => m.id !== memberToDelete.id));
     setContributions(contributions.filter(c => c.memberId !== memberToDelete.id));
+    deleteMemberFromFirestore(memberToDelete.id).catch(error => {
+      console.error('Failed to delete member from Firestore', error);
+    });
     setMemberToDelete(null);
   };
 
@@ -165,8 +182,7 @@ const App: React.FC = () => {
   };
 
   const handleImportData = (csvData: string) => {
-    const lines = csvData.trim().split('
-');
+    const lines = csvData.trim().split('\n');
     const newContributions: Contribution[] = [];
     let updatedMembers = [...members];
     const memberNameMap = new Map(updatedMembers.map(m => [m.name.toLowerCase(), m]));
@@ -222,6 +238,10 @@ const App: React.FC = () => {
     const newMembersCount = updatedMembers.length - members.length;
     if (newMembersCount > 0) {
         setMembers(updatedMembers);
+        const newMembers = updatedMembers.slice(members.length);
+        saveMultipleMembersToFirestore(newMembers).catch(error => {
+          console.error('Failed to save imported members to Firestore', error);
+        });
     }
     if (newContributions.length > 0) {
         setContributions([...contributions, ...newContributions]);
@@ -241,8 +261,7 @@ const App: React.FC = () => {
     }
 
     if (invalidLines > 0) {
-        alertMessage += `
-(${invalidLines} line(s) with invalid data were skipped.)`;
+        alertMessage += `\n(${invalidLines} line(s) with invalid data were skipped.)`;
     }
 
     alert(alertMessage);
