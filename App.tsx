@@ -77,9 +77,15 @@ const App: React.FC = () => {
 
   useEffect(() => {
     loadContributionsFromFirestore()
-      .then(fetched => {
+      .then(async fetched => {
         if (fetched.length > 0) {
           setContributions(fetched);
+        } else if (contributions.length > 0) {
+          try {
+            await saveMultipleContributionsToFirestore(contributions);
+          } catch (syncError) {
+            console.error('Failed to sync local contributions to Firestore', syncError);
+          }
         }
       })
       .catch(error => {
