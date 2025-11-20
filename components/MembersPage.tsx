@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Member } from '../types';
 import Card from './common/Card';
-import { uploadProfilePicture } from '../utils/imageUpload';
+// Temporarily use base64 until Firebase Storage is configured
+import { uploadProfilePictureBase64 as uploadProfilePicture } from '../utils/imageUploadBase64';
 
 interface MembersPageProps {
   members: Member[];
