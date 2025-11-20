@@ -16,6 +16,7 @@ import MemberSummaryPage from './components/MemberSummaryPage';
 import { getTodayDateString, countContributionDays } from './utils/date';
 import { saveContributionToFirestore, deleteContributionFromFirestore, saveMultipleContributionsToFirestore, loadContributionsFromFirestore } from './firestoreContributions';
 import { loadMembersFromFirestore, saveMultipleMembersToFirestore, deleteMemberFromFirestore } from './firestoreMembers';
+import { updateMemberCredentials } from './memberCredentials';
 
 type Page = 'dashboard' | 'dataTable' | 'members';
 type UserRole = 'admin' | 'member';
@@ -46,9 +47,47 @@ const App: React.FC = () => {
     setCurrentUser('');
     setUserRole('member');
     setPage('dashboard');
+    // Clear localStorage
+    localStorage.removeItem('fundTracker_user');
+    localStorage.removeItem('fundTracker_role');
+  };
+
+  const handleMemberUpdateProfile = (displayName: string, profilePicture?: string) => {
+    // Find the member by current display name and update
+    const memberToUpdate = members.find(m => m.name === currentUser);
+    if (memberToUpdate) {
+      const oldDisplayName = memberToUpdate.name;
+      updateMember(memberToUpdate.id, displayName, profilePicture);
+      setCurrentUser(displayName); // Update current user to new display name
+      
+      // Update credentials with new display name
+      updateMemberCredentials(oldDisplayName, undefined, undefined, displayName);
+    }
+  };
+
+  const handleMemberUpdateCredentials = (newUsername: string, newPassword: string) => {
+    // Update credentials using the update function
+    const success = updateMemberCredentials(currentUser, newUsername, newPassword, undefined);
+    
+    if (success) {
+      alert('Login credentials updated successfully! Please use your new credentials next time you log in.');
+    } else {
+      alert('Failed to update credentials. Please try again.');
+    }
   };
 
   useEffect(() => {
+    // Check for stored login credentials
+    const storedUser = localStorage.getItem('fundTracker_user');
+    const storedRole = localStorage.getItem('fundTracker_role');
+    
+    if (storedUser && storedRole) {
+      setCurrentUser(storedUser);
+      setUserRole(storedRole as UserRole);
+      setIsLoggedIn(true);
+    }
+
+    // Load data from Firestore
     loadContributionsFromFirestore()
       .then(fetched => {
         if (fetched.length > 0) {
@@ -346,7 +385,15 @@ const App: React.FC = () => {
 
   // Show member summary page for non-admin users
   if (userRole === 'member') {
-    return <MemberSummaryPage members={membersWithTotals} currentUsername={currentUser} onLogout={handleLogout} />;
+    return (
+      <MemberSummaryPage 
+        members={membersWithTotals} 
+        currentUsername={currentUser} 
+        onLogout={handleLogout}
+        onUpdateProfile={handleMemberUpdateProfile}
+        onUpdateCredentials={handleMemberUpdateCredentials}
+      />
+    );
   }
 
   // Admin view - full dashboard

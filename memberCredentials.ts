@@ -7,7 +7,8 @@ export interface MemberCredential {
   displayName: string;
 }
 
-export const memberCredentials: MemberCredential[] = [
+// Using let instead of const to allow modifications
+export let memberCredentials: MemberCredential[] = [
   { username: 'bryan', password: 'bryan123', displayName: 'Bryan' },
   { username: 'deign', password: 'deign123', displayName: 'Deign' },
   { username: 'jv', password: 'jv123', displayName: 'Jv' },
@@ -27,4 +28,22 @@ export const validateMemberCredentials = (username: string, password: string): s
 
 export const isAdminCredentials = (username: string, password: string): boolean => {
   return username.toLowerCase() === 'mazy' && password === 'mazy123';
+};
+
+export const updateMemberCredentials = (
+  oldDisplayName: string,
+  newUsername?: string,
+  newPassword?: string,
+  newDisplayName?: string
+): boolean => {
+  const index = memberCredentials.findIndex(c => c.displayName === oldDisplayName);
+  if (index !== -1) {
+    memberCredentials[index] = {
+      username: newUsername || memberCredentials[index].username,
+      password: newPassword || memberCredentials[index].password,
+      displayName: newDisplayName || memberCredentials[index].displayName,
+    };
+    return true;
+  }
+  return false;
 };

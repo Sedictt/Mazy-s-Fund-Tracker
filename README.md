@@ -12,6 +12,8 @@ A comprehensive fund tracking application with role-based access for administrat
 - **Member View**: Summary view showing total contributions and balances
 - **Role-Based Access**: Different interfaces for administrators and members
 - **Profile Management**: Upload and manage profile pictures
+- **Member Self-Service**: Members can update their own profile, credentials, and profile picture
+- **Persistent Sessions**: "Stay logged in" feature for convenient access
 - **Data Import/Export**: Import contribution data via CSV
 - **Real-time Tracking**: Daily contribution tracking with balance calculations
 
@@ -23,7 +25,7 @@ A comprehensive fund tracking application with role-based access for administrat
 - **Permissions**: Full access to dashboard, data table, member management, and all features
 
 ### Member Access
-Members have read-only access to view their contributions and fund summary.
+Members have read-only access to view their contributions and fund summary, plus the ability to manage their own profile and login credentials.
 
 | Username | Password     | Display Name |
 |----------|--------------|--------------|
@@ -36,7 +38,11 @@ Members have read-only access to view their contributions and fund summary.
 | sean     | sean123      | Sean         |
 | mark     | mark123      | Mark         |
 
-**Member Permissions**: View-only access to summary page showing contributions and balances
+**Member Permissions**: 
+- View-only access to summary page showing contributions and balances
+- Edit their own display name and profile picture
+- Update their own username and password
+- Cannot manage other members or modify contribution data
 
 ## Run Locally
 

@@ -1,14 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Card from './common/Card';
 import { Member } from '../types';
+import MemberProfileSettings from './MemberProfileSettings';
 
 interface MemberSummaryPageProps {
   members: Member[];
   currentUsername: string;
   onLogout: () => void;
+  onUpdateProfile: (displayName: string, profilePicture?: string) => void;
+  onUpdateCredentials: (newUsername: string, newPassword: string) => void;
 }
 
-const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({ members, currentUsername, onLogout }) => {
+const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({ 
+  members, 
+  currentUsername, 
+  onLogout,
+  onUpdateProfile,
+  onUpdateCredentials
+}) => {
+  const [showSettings, setShowSettings] = useState(false);
   // Find current member
   const currentMember = members.find(m => m.name.toLowerCase() === currentUsername.toLowerCase());
   
@@ -29,6 +39,16 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({ members, currentU
                 <p className="text-sm text-gray-600">Logged in as</p>
                 <p className="font-semibold text-gray-800">{currentUsername}</p>
               </div>
+              <button
+                onClick={() => setShowSettings(true)}
+                className="p-2 rounded-md text-gray-600 hover:bg-violet-100 transition-colors"
+                title="Profile Settings"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </button>
               <button
                 onClick={onLogout}
                 className="px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 rounded-md transition-colors"
@@ -157,6 +177,18 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({ members, currentU
           </p>
         </div>
       </div>
+
+      {/* Profile Settings Modal */}
+      {showSettings && currentMember && (
+        <MemberProfileSettings
+          currentUsername={currentUsername}
+          displayName={currentMember.name}
+          profilePicture={currentMember.profilePicture}
+          onUpdateProfile={onUpdateProfile}
+          onUpdateCredentials={onUpdateCredentials}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
     </div>
   );
 };

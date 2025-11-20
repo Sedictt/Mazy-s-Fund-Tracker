@@ -11,6 +11,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [stayLoggedIn, setStayLoggedIn] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,6 +21,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     setTimeout(() => {
       // Check admin login
       if (isAdminCredentials(username, password)) {
+        if (stayLoggedIn) {
+          localStorage.setItem('fundTracker_user', 'Mazy');
+          localStorage.setItem('fundTracker_role', 'admin');
+        }
         onLogin('Mazy', 'admin');
         setIsLoading(false);
         return;
@@ -28,6 +33,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       // Check member login
       const memberDisplayName = validateMemberCredentials(username, password);
       if (memberDisplayName) {
+        if (stayLoggedIn) {
+          localStorage.setItem('fundTracker_user', memberDisplayName);
+          localStorage.setItem('fundTracker_role', 'member');
+        }
         onLogin(memberDisplayName, 'member');
         setIsLoading(false);
         return;
@@ -92,6 +101,19 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 placeholder="Enter your password"
                 required
               />
+            </div>
+
+            <div className="flex items-center mb-4">
+              <input
+                id="stayLoggedIn"
+                type="checkbox"
+                checked={stayLoggedIn}
+                onChange={(e) => setStayLoggedIn(e.target.checked)}
+                className="w-4 h-4 text-violet-600 bg-gray-100 border-gray-300 rounded focus:ring-violet-500 focus:ring-2"
+              />
+              <label htmlFor="stayLoggedIn" className="ml-2 text-sm text-gray-700 cursor-pointer">
+                Stay logged in
+              </label>
             </div>
 
             <button
