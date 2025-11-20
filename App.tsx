@@ -13,6 +13,7 @@ import ConfirmationModal from './components/common/ConfirmationModal';
 import DataTablePage from './components/DataTablePage';
 import LoginPage from './components/LoginPage';
 import MemberSummaryPage from './components/MemberSummaryPage';
+import GroupChat from './components/GroupChat';
 import { getTodayDateString, countContributionDays } from './utils/date';
 import { saveContributionToFirestore, deleteContributionFromFirestore, saveMultipleContributionsToFirestore, loadContributionsFromFirestore } from './firestoreContributions';
 import { loadMembersFromFirestore, saveMultipleMembersToFirestore, deleteMemberFromFirestore } from './firestoreMembers';
@@ -33,6 +34,7 @@ const App: React.FC = () => {
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
   const [contributionToDelete, setContributionToDelete] = useState<Contribution | null>(null);
   const [page, setPage] = useState<Page>('dashboard');
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const CONTRIBUTION_AMOUNT = 10;
 
@@ -385,21 +387,34 @@ const App: React.FC = () => {
 
   // Show member summary page for non-admin users
   if (userRole === 'member') {
+    const currentMember = members.find(m => m.name === currentUser);
+    
     return (
-      <MemberSummaryPage 
-        members={membersWithTotals} 
-        currentUsername={currentUser} 
-        onLogout={handleLogout}
-        onUpdateProfile={handleMemberUpdateProfile}
-        onUpdateCredentials={handleMemberUpdateCredentials}
-      />
+      <>
+        <MemberSummaryPage 
+          members={membersWithTotals} 
+          currentUsername={currentUser} 
+          onLogout={handleLogout}
+          onUpdateProfile={handleMemberUpdateProfile}
+          onUpdateCredentials={handleMemberUpdateCredentials}
+          onOpenChat={() => setIsChatOpen(true)}
+        />
+        {isChatOpen && (
+          <GroupChat
+            currentUser={currentUser}
+            userRole={userRole}
+            userProfilePicture={currentMember?.profilePicture}
+            onClose={() => setIsChatOpen(false)}
+          />
+        )}
+      </>
     );
   }
 
   // Admin view - full dashboard
   return (
     <div className="min-h-screen bg-violet-50 text-gray-800">
-      <Header page={page} onSetPage={setPage} onLogout={handleLogout} currentUser={currentUser} />
+      <Header page={page} onSetPage={setPage} onLogout={handleLogout} currentUser={currentUser} onOpenChat={() => setIsChatOpen(true)} />
       <main className="container mx-auto p-4 md:p-6 lg:p-8">
         {page === 'dashboard' ? (
           <>
@@ -495,6 +510,16 @@ const App: React.FC = () => {
             title="Delete Contribution?"
             message="Are you sure you want to delete this contribution record? This action cannot be undone."
           />
+      )}
+
+      {/* Group Chat */}
+      {isChatOpen && (
+        <GroupChat
+          currentUser={currentUser}
+          userRole={userRole}
+          userProfilePicture={members.find(m => m.name === currentUser)?.profilePicture}
+          onClose={() => setIsChatOpen(false)}
+        />
       )}
     </div>
   );

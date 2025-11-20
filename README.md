@@ -11,6 +11,7 @@ A comprehensive fund tracking application with role-based access for administrat
 - **Admin Dashboard**: Full management capabilities for contributions, members, and fund tracking
 - **Member View**: Summary view showing total contributions and balances
 - **Role-Based Access**: Different interfaces for administrators and members
+- **Real-Time Group Chat**: Centralized messaging system for all members and admin with instant updates
 - **Profile Management**: Upload and manage profile pictures
 - **Member Self-Service**: Members can update their own profile, credentials, and profile picture
 - **Persistent Sessions**: "Stay logged in" feature for convenient access
