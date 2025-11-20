@@ -76,27 +76,27 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-4xl h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <Card className="w-full max-w-4xl h-[95vh] sm:h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-violet-50 rounded-t-lg">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-violet-500 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="p-3 sm:p-4 border-b border-gray-200 flex items-center justify-between bg-violet-50 rounded-t-lg flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-violet-500 flex items-center justify-center flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-6 sm:w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
               </svg>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">Group Chat</h2>
-              <p className="text-sm text-gray-600">All members • {messages.length} messages</p>
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-xl font-bold text-gray-800 truncate">Group Chat</h2>
+              <p className="text-xs sm:text-sm text-gray-600 truncate">All members • {messages.length} messages</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-1.5 sm:p-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0"
             aria-label="Close chat"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -105,15 +105,15 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
         {/* Messages Container */}
         <div 
           ref={chatContainerRef}
-          className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
+          className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50"
         >
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-500">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="flex flex-col items-center justify-center h-full text-gray-500 px-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 sm:h-16 sm:w-16 mb-3 sm:mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-              <p className="text-lg font-medium">No messages yet</p>
-              <p className="text-sm">Be the first to say hello! 👋</p>
+              <p className="text-base sm:text-lg font-medium text-center">No messages yet</p>
+              <p className="text-xs sm:text-sm text-center mt-1">Be the first to say hello! 👋</p>
             </div>
           ) : (
             messages.map((msg) => {
@@ -123,7 +123,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
               return (
                 <div
                   key={msg.id}
-                  className={`flex gap-3 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}
+                  className={`flex gap-2 sm:gap-3 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}
                 >
                   {/* Profile Picture */}
                   <div className="flex-shrink-0">
@@ -131,13 +131,13 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
                       <img
                         src={msg.profilePicture}
                         alt={msg.userName}
-                        className="w-10 h-10 rounded-full object-cover border-2 border-violet-200"
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-violet-200"
                       />
                     ) : (
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${
                         isAdmin ? 'bg-purple-200' : 'bg-violet-200'
                       }`}>
-                        <span className={`text-sm font-bold ${
+                        <span className={`text-xs sm:text-sm font-bold ${
                           isAdmin ? 'text-purple-700' : 'text-violet-700'
                         }`}>
                           {msg.userName.charAt(0).toUpperCase()}
@@ -147,34 +147,34 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
                   </div>
 
                   {/* Message Content */}
-                  <div className={`flex-1 max-w-[70%] ${isCurrentUser ? 'text-right' : 'text-left'}`}>
-                    <div className="flex items-center gap-2 mb-1" style={{ flexDirection: isCurrentUser ? 'row-reverse' : 'row' }}>
-                      <span className="text-sm font-semibold text-gray-800">{msg.userName}</span>
+                  <div className={`flex-1 max-w-[75%] sm:max-w-[70%] ${isCurrentUser ? 'text-right' : 'text-left'}`}>
+                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1" style={{ flexDirection: isCurrentUser ? 'row-reverse' : 'row' }}>
+                      <span className="text-xs sm:text-sm font-semibold text-gray-800 truncate">{msg.userName}</span>
                       {isAdmin && (
-                        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">
+                        <span className="px-1.5 py-0.5 sm:px-2 bg-purple-100 text-purple-700 text-[10px] sm:text-xs font-medium rounded-full flex-shrink-0">
                           Admin
                         </span>
                       )}
-                      <span className="text-xs text-gray-500">{formatTime(msg.timestamp)}</span>
+                      <span className="text-[10px] sm:text-xs text-gray-500 flex-shrink-0">{formatTime(msg.timestamp)}</span>
                     </div>
                     
                     <div className="relative group">
-                      <div className={`inline-block p-3 rounded-lg ${
+                      <div className={`inline-block p-2 sm:p-3 rounded-lg ${
                         isCurrentUser 
                           ? 'bg-violet-500 text-white' 
                           : 'bg-white text-gray-800 border border-gray-200'
                       }`}>
-                        <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
+                        <p className="text-xs sm:text-sm whitespace-pre-wrap break-words leading-relaxed">{msg.message}</p>
                       </div>
                       
                       {/* Delete button (admin only) */}
                       {userRole === 'admin' && !isCurrentUser && (
                         <button
                           onClick={() => handleDeleteMessage(msg.id)}
-                          className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                          className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
                           title="Delete message"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
@@ -189,7 +189,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
         </div>
 
         {/* Message Input */}
-        <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200 bg-white rounded-b-lg">
+        <form onSubmit={handleSendMessage} className="p-3 sm:p-4 border-t border-gray-200 bg-white rounded-b-lg flex-shrink-0">
           <div className="flex gap-2">
             <input
               type="text"
@@ -197,20 +197,25 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type a message..."
               disabled={isSending}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 disabled:bg-gray-100"
+              className="flex-1 px-3 py-2 sm:px-4 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 disabled:bg-gray-100"
             />
             <button
               type="submit"
               disabled={isSending || newMessage.trim() === ''}
-              className="px-6 py-2 bg-violet-500 text-white rounded-lg font-semibold hover:bg-violet-600 transition-colors disabled:bg-violet-300 disabled:cursor-not-allowed"
+              className="px-4 sm:px-6 py-2 bg-violet-500 text-white rounded-lg font-semibold hover:bg-violet-600 transition-colors disabled:bg-violet-300 disabled:cursor-not-allowed text-sm sm:text-base flex-shrink-0"
             >
               {isSending ? (
-                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               ) : (
-                'Send'
+                <span className="hidden sm:inline">Send</span>
+              )}
+              {!isSending && (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
               )}
             </button>
           </div>
