@@ -35,6 +35,11 @@ const App: React.FC = () => {
   const [contributionToDelete, setContributionToDelete] = useState<Contribution | null>(null);
   const [page, setPage] = useState<Page>('dashboard');
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [showMemberList, setShowMemberList] = useState(false);
+  const [showContributionLog, setShowContributionLog] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [isDailyTrackerExpanded, setIsDailyTrackerExpanded] = useState(true);
+  const [isDashboardExpanded, setIsDashboardExpanded] = useState(false);
 
   const CONTRIBUTION_AMOUNT = 10;
 
@@ -418,39 +423,149 @@ const App: React.FC = () => {
       <main className="container mx-auto p-4 md:p-6 lg:p-8">
         {page === 'dashboard' ? (
           <>
-            <Dashboard
-              totalContributions={totalContributions}
-              goalAmount={goal}
-              memberCount={members.length}
-              outstandingBalance={outstandingBalance}
-              onSetGoal={setGoal}
-              onImportData={handleImportData}
-            />
-            <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2">
-                <DailyTracker
-                  members={members}
-                  contributions={contributions}
-                  onAddContribution={addDailyContribution}
-                  contributionAmount={CONTRIBUTION_AMOUNT}
-                />
+            {/* Goal and Stats Section - Collapsible */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              {/* Header with Total Funds Always Visible */}
+              <button
+                onClick={() => setIsDashboardExpanded(!isDashboardExpanded)}
+                className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <h2 className="text-sm text-gray-600">Total Funds</h2>
+                    <p className="text-2xl font-bold text-gray-800">₱{totalContributions.toLocaleString()}</p>
+                  </div>
+                </div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-6 w-6 text-gray-600 transition-transform duration-200 ${isDashboardExpanded ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Collapsible Dashboard Content */}
+              {isDashboardExpanded && (
+                <div className="border-t border-gray-200">
+                  <Dashboard
+                    totalContributions={totalContributions}
+                    goalAmount={goal}
+                    memberCount={members.length}
+                    outstandingBalance={outstandingBalance}
+                    onSetGoal={setGoal}
+                    onImportData={handleImportData}
+                    hideTotalFunds={true}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Main Daily Tracker */}
+            <div className="mt-6">
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                {/* Collapsible Header */}
+                <button
+                  onClick={() => setIsDailyTrackerExpanded(!isDailyTrackerExpanded)}
+                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800">Daily Contribution Tracker</h2>
+                  </div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-6 w-6 text-gray-600 transition-transform duration-200 ${isDailyTrackerExpanded ? 'rotate-180' : ''}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {/* Collapsible Content */}
+                {isDailyTrackerExpanded && (
+                  <div className="px-6 pb-6 border-t border-gray-200">
+                    <DailyTracker
+                      members={members}
+                      contributions={contributions}
+                      onAddContribution={addDailyContribution}
+                      contributionAmount={CONTRIBUTION_AMOUNT}
+                    />
+                  </div>
+                )}
               </div>
-              <div className="space-y-8">
-                <MemberList
-                  members={members}
-                  memberTotals={memberTotals}
-                  balances={balances}
-                  onAddMember={addMember}
-                  onPayBalance={setPayingMember}
-                  onDeleteMember={handleDeleteMember}
-                />
-                <ContributionLog
-                  contributions={contributions}
-                  members={members}
-                  onEdit={setEditingContribution}
-                  onDelete={handleDeleteContribution}
-                />
-              </div>
+            </div>
+
+            {/* Quick Action Cards */}
+            <div className="mt-6 grid grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Member List Card */}
+              <button
+                onClick={() => setShowMemberList(true)}
+                className="group"
+              >
+                <div className="h-full p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer border border-blue-200">
+                  <div className="flex flex-col items-center text-center h-full justify-center">
+                    <div className="w-12 h-12 rounded-full bg-blue-100 group-hover:bg-blue-200 transition-colors flex items-center justify-center mb-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-sm sm:text-base font-bold text-gray-800 mb-1">Member List</h3>
+                    <p className="text-xs text-gray-600">Manage members</p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Contribution Log Card */}
+              <button
+                onClick={() => setShowContributionLog(true)}
+                className="group"
+              >
+                <div className="h-full p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer border border-green-200">
+                  <div className="flex flex-col items-center text-center h-full justify-center">
+                    <div className="w-12 h-12 rounded-full bg-green-100 group-hover:bg-green-200 transition-colors flex items-center justify-center mb-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                      </svg>
+                    </div>
+                    <h3 className="text-sm sm:text-base font-bold text-gray-800 mb-1">Contribution Log</h3>
+                    <p className="text-xs text-gray-600">Recent activity</p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Data Import Card */}
+              <button
+                onClick={() => setShowSettings(true)}
+                className="group col-span-2 lg:col-span-1"
+              >
+                <div className="h-full p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer border border-violet-200">
+                  <div className="flex flex-col items-center text-center h-full justify-center">
+                    <div className="w-12 h-12 rounded-full bg-violet-100 group-hover:bg-violet-200 transition-colors flex items-center justify-center mb-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                    </div>
+                    <h3 className="text-sm sm:text-base font-bold text-gray-800 mb-1">Import Data</h3>
+                    <p className="text-xs text-gray-600">Bulk upload CSV</p>
+                  </div>
+                </div>
+              </button>
             </div>
           </>
         ) : page === 'members' ? (
@@ -520,6 +635,91 @@ const App: React.FC = () => {
           userProfilePicture={members.find(m => m.name === currentUser)?.profilePicture}
           onClose={() => setIsChatOpen(false)}
         />
+      )}
+
+      {/* Member List Modal */}
+      {showMemberList && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+              <h2 className="text-xl font-bold text-gray-800">Member List</h2>
+              <button
+                onClick={() => setShowMemberList(false)}
+                className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4">
+              <MemberList
+                members={members}
+                memberTotals={memberTotals}
+                balances={balances}
+                onAddMember={addMember}
+                onPayBalance={setPayingMember}
+                onDeleteMember={handleDeleteMember}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Contribution Log Modal */}
+      {showContributionLog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+              <h2 className="text-xl font-bold text-gray-800">Contribution Log</h2>
+              <button
+                onClick={() => setShowContributionLog(false)}
+                className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4">
+              <ContributionLog
+                contributions={contributions}
+                members={members}
+                onEdit={setEditingContribution}
+                onDelete={handleDeleteContribution}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+              <h2 className="text-xl font-bold text-gray-800">Settings</h2>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4">
+              <Dashboard
+                totalContributions={totalContributions}
+                goalAmount={goal}
+                memberCount={members.length}
+                outstandingBalance={outstandingBalance}
+                onSetGoal={setGoal}
+                onImportData={handleImportData}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

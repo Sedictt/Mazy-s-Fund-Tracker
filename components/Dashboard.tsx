@@ -9,11 +9,12 @@ interface DashboardProps {
   outstandingBalance: number;
   onSetGoal: (newGoal: number) => void;
   onImportData: (csvData: string) => void;
+  hideTotalFunds?: boolean;
 }
 
 const StatCard: React.FC<{ title: string; value: string; icon: React.ReactNode }> = ({ title, value, icon }) => (
-    <Card className="flex items-center p-4">
-        <div className="p-3 rounded-full bg-violet-100 text-violet-600 mr-4">
+    <Card className="flex items-center p-6">
+        <div className="p-3 rounded-full bg-violet-100 text-violet-600 mr-4 flex items-center justify-center">
             {icon}
         </div>
         <div>
@@ -23,7 +24,7 @@ const StatCard: React.FC<{ title: string; value: string; icon: React.ReactNode }
     </Card>
 );
 
-const Dashboard: React.FC<DashboardProps> = ({ totalContributions, goalAmount, memberCount, outstandingBalance, onSetGoal, onImportData }) => {
+const Dashboard: React.FC<DashboardProps> = ({ totalContributions, goalAmount, memberCount, outstandingBalance, onSetGoal, onImportData, hideTotalFunds = false }) => {
   const progress = goalAmount > 0 ? Math.round((totalContributions / goalAmount) * 100) : 0;
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [newGoal, setNewGoal] = useState(goalAmount.toString());
@@ -42,11 +43,13 @@ const Dashboard: React.FC<DashboardProps> = ({ totalContributions, goalAmount, m
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-            title="Total Funds Collected" 
-            value={`₱${totalContributions.toLocaleString()}`}
-            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
-        />
+        {!hideTotalFunds && (
+          <StatCard 
+              title="Total Funds Collected" 
+              value={`₱${totalContributions.toLocaleString()}`}
+              icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
+          />
+        )}
         <StatCard 
             title="Savings Goal" 
             value={`₱${goalAmount.toLocaleString()}`}
