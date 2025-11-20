@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Modal from './common/Modal';
 
 interface AnnouncementsModalProps {
@@ -7,6 +7,7 @@ interface AnnouncementsModalProps {
 }
 
 const AnnouncementsModal: React.FC<AnnouncementsModalProps> = ({ isOpen, onClose }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
   const announcements = [
     {
       id: 1,
@@ -98,28 +99,89 @@ const AnnouncementsModal: React.FC<AnnouncementsModalProps> = ({ isOpen, onClose
     </svg>
   );
 
+  const handlePrevious = () => {
+    setCurrentIndex((prev) => (prev === 0 ? announcements.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev === announcements.length - 1 ? 0 : prev + 1));
+  };
+
+  const currentAnnouncement = announcements[currentIndex];
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="What's New" icon={icon}>
-      <div className="mt-4 space-y-3 sm:space-y-4 max-h-96 overflow-y-auto px-1">
-        {announcements.map((announcement) => (
-          <div
-            key={announcement.id}
-            className="p-3 sm:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+      <div className="mt-4">
+        {/* Carousel Container with External Navigation */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Left Arrow */}
+          <button
+            onClick={handlePrevious}
+            className="flex-shrink-0 bg-white hover:bg-violet-50 text-violet-600 rounded-full p-2 shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-violet-500"
+            aria-label="Previous announcement"
           >
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3 mb-2">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex-1">{announcement.title}</h3>
-              <span className={`self-start px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getTypeColor(announcement.type)}`}>
-                {getTypeLabel(announcement.type)}
-              </span>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          {/* Carousel Card */}
+          <div className="flex-1 bg-gradient-to-br from-violet-50 to-indigo-50 rounded-xl p-6 sm:p-8 shadow-lg min-h-[280px] flex flex-col">
+            {/* Card Content */}
+            <div className="flex-1 text-center">
+              <div className="flex justify-center mb-3">
+                <span className={`px-3 py-1 text-sm font-medium rounded-full ${getTypeColor(currentAnnouncement.type)}`}>
+                  {getTypeLabel(currentAnnouncement.type)}
+                </span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
+                {currentAnnouncement.title}
+              </h3>
+              <p className="text-base text-gray-700 mb-4 leading-relaxed">
+                {currentAnnouncement.description}
+              </p>
+              <p className="text-sm text-gray-500 font-medium">{currentAnnouncement.date}</p>
             </div>
-            <p className="text-sm text-gray-600 mb-2 leading-relaxed">{announcement.description}</p>
-            <p className="text-xs text-gray-500">{announcement.date}</p>
           </div>
-        ))}
+
+          {/* Right Arrow */}
+          <button
+            onClick={handleNext}
+            className="flex-shrink-0 bg-white hover:bg-violet-50 text-violet-600 rounded-full p-2 shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-violet-500"
+            aria-label="Next announcement"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Dot Indicators */}
+        <div className="flex justify-center gap-2 mt-6">
+          {announcements.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentIndex(index)}
+              className={`h-2 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-violet-500 ${
+                index === currentIndex 
+                  ? 'w-8 bg-violet-600' 
+                  : 'w-2 bg-gray-300 hover:bg-gray-400'
+              }`}
+              aria-label={`Go to announcement ${index + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* Counter */}
+        <div className="text-center mt-4">
+          <p className="text-sm text-gray-600 font-medium">
+            {currentIndex + 1} of {announcements.length}
+          </p>
+        </div>
       </div>
       
-      <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-violet-50 rounded-lg">
-        <p className="text-xs sm:text-sm text-violet-800 leading-relaxed">
+      <div className="mt-6 p-4 bg-violet-50 rounded-lg">
+        <p className="text-sm text-violet-800 leading-relaxed">
           <strong>💡 Tip:</strong> Check back here regularly for new features and updates!
         </p>
       </div>
