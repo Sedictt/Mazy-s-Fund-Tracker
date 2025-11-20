@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Member } from '../types';
 import Card from './common/Card';
+import ConfirmationModal from './common/ConfirmationModal';
 // Temporarily use base64 until Firebase Storage is configured
 import { uploadProfilePictureBase64 as uploadProfilePicture } from '../utils/imageUploadBase64';
 
@@ -21,6 +22,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
   const [editName, setEditName] = useState('');
   const [newMemberName, setNewMemberName] = useState('');
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
+  const [memberToRemovePicture, setMemberToRemovePicture] = useState<Member | null>(null);
 
   const handleStartEdit = (member: Member) => {
     setEditingMember(member.id);
@@ -66,6 +68,20 @@ const MembersPage: React.FC<MembersPageProps> = ({
       } finally {
         setUploadingImage(null);
       }
+    }
+  };
+
+  const handleRemoveProfilePicture = (memberId: string) => {
+    const member = members.find(m => m.id === memberId);
+    if (member) {
+      setMemberToRemovePicture(member);
+    }
+  };
+
+  const confirmRemoveProfilePicture = () => {
+    if (memberToRemovePicture) {
+      onUpdateMember(memberToRemovePicture.id, memberToRemovePicture.name, '');
+      setMemberToRemovePicture(null);
     }
   };
 
@@ -121,15 +137,28 @@ const MembersPage: React.FC<MembersPageProps> = ({
                       )}
                     </div>
                     {uploadingImage !== member.id && (
-                      <label 
-                        htmlFor={`upload-${member.id}`}
-                        className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      </label>
+                      <>
+                        <label 
+                          htmlFor={`upload-${member.id}`}
+                          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 sm:group-hover:opacity-100 transition-opacity cursor-pointer"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                        </label>
+                        {member.profilePicture && (
+                          <button
+                            onClick={() => handleRemoveProfilePicture(member.id)}
+                            className="absolute -bottom-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600 z-10"
+                            title="Remove profile picture"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        )}
+                      </>
                     )}
                     <input
                       id={`upload-${member.id}`}
@@ -215,6 +244,17 @@ const MembersPage: React.FC<MembersPageProps> = ({
           )}
         </div>
       </Card>
+
+      {/* Confirmation Modal for Removing Profile Picture */}
+      {memberToRemovePicture && (
+        <ConfirmationModal
+          isOpen={!!memberToRemovePicture}
+          onClose={() => setMemberToRemovePicture(null)}
+          onConfirm={confirmRemoveProfilePicture}
+          title={`Remove ${memberToRemovePicture.name}'s Profile Picture?`}
+          message="Are you sure you want to remove this profile picture? This action cannot be undone."
+        />
+      )}
     </div>
   );
 };
