@@ -18,7 +18,7 @@ import { getTodayDateString, countContributionDays } from './utils/date';
 import { saveContributionToFirestore, deleteContributionFromFirestore, saveMultipleContributionsToFirestore, loadContributionsFromFirestore } from './firestoreContributions';
 import { loadMembersFromFirestore, saveMultipleMembersToFirestore, deleteMemberFromFirestore } from './firestoreMembers';
 import { updateMemberCredentials } from './memberCredentials';
-import { requestNotificationPermission, showContributionNotification } from './utils/notifications';
+import { requestNotificationPermission, showContributionNotification, playNotificationSound } from './utils/notifications';
 import { subscribeToMessages, ChatMessage } from './firestoreMessages';
 
 type Page = 'dashboard' | 'dataTable' | 'members';
@@ -129,25 +129,33 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!isLoggedIn) return;
 
-    let lastMessageTime = Date.now();
-    const audio = new Audio('/notification.mp3');
+    let previousMessageCount = 0;
 
     const unsubscribe = subscribeToMessages((messages: ChatMessage[]) => {
-      if (messages.length > 0) {
-        const latestMessage = messages[messages.length - 1];
-        const messageTime = new Date(latestMessage.timestamp).getTime();
+      // Skip if this is the first load
+      if (previousMessageCount === 0) {
+        previousMessageCount = messages.length;
+        return;
+      }
+
+      // Check if there are new messages
+      if (messages.length > previousMessageCount) {
+        const newMessages = messages.slice(previousMessageCount);
         
-        // Check if this is a new message (not from current user and chat is closed)
-        if (
-          messageTime > lastMessageTime &&
-          latestMessage.userName !== currentUser &&
-          !isChatOpen
-        ) {
-          setUnreadMessageCount(prev => prev + 1);
+        // Check if any new message is from someone else
+        const hasNewMessageFromOthers = newMessages.some(
+          msg => msg.userName !== currentUser
+        );
+
+        if (hasNewMessageFromOthers && !isChatOpen) {
+          const newCount = newMessages.filter(msg => msg.userName !== currentUser).length;
+          setUnreadMessageCount(prev => prev + newCount);
           
           // Play notification sound
-          audio.play().catch(err => console.log('Could not play notification sound:', err));
+          playNotificationSound();
         }
+        
+        previousMessageCount = messages.length;
       }
     });
 

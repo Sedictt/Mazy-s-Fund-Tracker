@@ -14,7 +14,17 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+// Initialize analytics conditionally with error handling
+let analytics;
+try {
+  if (typeof window !== 'undefined') {
+    analytics = getAnalytics(app);
+  }
+} catch (error) {
+  console.warn('Analytics could not be initialized:', error);
+}
+
 const db = getFirestore(app);
 const storage = getStorage(app);
 
