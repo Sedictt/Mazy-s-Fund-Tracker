@@ -1,6 +1,5 @@
 import React from 'react';
 import { Member, Contribution } from '../types';
-import Card from './common/Card';
 import { getTodayDateString } from '../utils/date';
 
 interface DailyTrackerProps {
@@ -17,10 +16,9 @@ const DailyTracker: React.FC<DailyTrackerProps> = ({ members, contributions, onA
   );
 
   return (
-    <Card>
-      <div className="p-5">
-        <h3 className="text-xl font-bold text-gray-800">Daily Contribution Tracker</h3>
-        <p className="text-gray-500 mt-1">Today's Date: {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+    <div className="pt-4">
+      <div className="px-5 pb-3">
+        <p className="text-gray-500 text-sm">Today's Date: {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
       </div>
       <div className="flow-root">
         <ul role="list" className="divide-y divide-gray-200">
@@ -60,7 +58,7 @@ const DailyTracker: React.FC<DailyTrackerProps> = ({ members, contributions, onA
           })}
         </ul>
       </div>
-    </Card>
+    </div>
   );
 };
 
