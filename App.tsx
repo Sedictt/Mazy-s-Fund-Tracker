@@ -18,6 +18,7 @@ import { getTodayDateString, countContributionDays } from './utils/date';
 import { saveContributionToFirestore, deleteContributionFromFirestore, saveMultipleContributionsToFirestore, loadContributionsFromFirestore } from './firestoreContributions';
 import { loadMembersFromFirestore, saveMultipleMembersToFirestore, deleteMemberFromFirestore } from './firestoreMembers';
 import { updateMemberCredentials } from './memberCredentials';
+import { requestNotificationPermission, showContributionNotification } from './utils/notifications';
 
 type Page = 'dashboard' | 'dataTable' | 'members';
 type UserRole = 'admin' | 'member';
@@ -47,6 +48,9 @@ const App: React.FC = () => {
     setCurrentUser(username);
     setUserRole(role);
     setIsLoggedIn(true);
+    
+    // Request notification permission on login
+    requestNotificationPermission();
   };
 
   const handleLogout = () => {
@@ -92,6 +96,9 @@ const App: React.FC = () => {
       setCurrentUser(storedUser);
       setUserRole(storedRole as UserRole);
       setIsLoggedIn(true);
+      
+      // Request notification permission after login
+      requestNotificationPermission();
     }
 
     // Load data from Firestore
@@ -175,6 +182,8 @@ const App: React.FC = () => {
     if (hasPaidToday) {
       return;
     }
+    
+    const member = members.find(m => m.id === memberId);
     const newContribution: Contribution = {
       id: new Date().getTime().toString(),
       memberId,
@@ -185,6 +194,11 @@ const App: React.FC = () => {
     saveContributionToFirestore(newContribution).catch(error => {
       console.error('Failed to save contribution to Firestore', error);
     });
+    
+    // Show notification
+    if (member) {
+      showContributionNotification(member.name, CONTRIBUTION_AMOUNT);
+    }
   };
 
   const recordBalancePayment = (memberId: string, amount: number) => {
