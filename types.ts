@@ -3,6 +3,7 @@ export interface Member {
   id: string;
   name: string;
   joinDate: string; // ISO string
+  profilePicture?: string; // Base64 encoded image or URL
 }
 
 export interface Contribution {

@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface HeaderProps {
-  page: 'dashboard' | 'dataTable';
-  onSetPage: (page: 'dashboard' | 'dataTable') => void;
+  page: 'dashboard' | 'dataTable' | 'members';
+  onSetPage: (page: 'dashboard' | 'dataTable' | 'members') => void;
 }
 
 const NavButton: React.FC<{
@@ -23,32 +23,102 @@ const NavButton: React.FC<{
 };
 
 const Header: React.FC<HeaderProps> = ({ page, onSetPage }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const handleNavigation = (newPage: 'dashboard' | 'dataTable' | 'members') => {
+    onSetPage(newPage);
+    setIsMenuOpen(false);
+  };
+
   return (
-    <header className="bg-white shadow-sm">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0">
-        <div className="flex items-center space-x-3">
-          <div className="w-auto h-10 sm:h-12 flex items-center justify-center flex-shrink-0">
-            <img src="/logo.png" alt="Mazy Fund Tracker Logo" className="h-full w-auto object-contain" />
-          </div>
-          <div>
-            {/* <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Mazy Fund Tracker</h1>
-            <p className="text-sm text-gray-500">Your daily contributions, simplified.</p> */}
+    <>
+      <header className="bg-white shadow-sm">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <div className="w-auto h-10 sm:h-12 flex items-center justify-center flex-shrink-0">
+                <img src="/logo.png" alt="Mazy Fund Tracker Logo" className="h-full w-auto object-contain" />
+              </div>
+              <div>
+                {/* <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Mazy Fund Tracker</h1>
+                <p className="text-sm text-gray-500">Your daily contributions, simplified.</p> */}
+              </div>
+            </div>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden sm:flex items-center space-x-2 p-1 bg-gray-100 rounded-lg">
+              <NavButton
+                label="Dashboard"
+                isActive={page === 'dashboard'}
+                onClick={() => onSetPage('dashboard')}
+              />
+              <NavButton
+                label="Data Table"
+                isActive={page === 'dataTable'}
+                onClick={() => onSetPage('dataTable')}
+              />
+            </nav>
+
+            {/* Mobile Hamburger Button */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="sm:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
+              aria-label="Toggle menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
           </div>
         </div>
-        <nav className="flex items-center space-x-2 p-1 bg-gray-100 rounded-lg w-full sm:w-auto">
-          <NavButton
-            label="Dashboard"
-            isActive={page === 'dashboard'}
-            onClick={() => onSetPage('dashboard')}
-          />
-          <NavButton
-            label="Data Table"
-            isActive={page === 'dataTable'}
-            onClick={() => onSetPage('dataTable')}
-          />
-        </nav>
+      </header>
+
+      {/* Mobile Sidebar Overlay */}
+      {isMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 sm:hidden"
+          onClick={() => setIsMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Sidebar */}
+      <div className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 sm:hidden ${
+        isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+      }`}>
+        <div className="p-4">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-bold text-gray-800">Menu</h2>
+            <button
+              onClick={() => setIsMenuOpen(false)}
+              className="p-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none"
+              aria-label="Close menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <nav className="flex flex-col space-y-2">
+            <NavButton
+              label="Dashboard"
+              isActive={page === 'dashboard'}
+              onClick={() => handleNavigation('dashboard')}
+            />
+            <NavButton
+              label="Members"
+              isActive={page === 'members'}
+              onClick={() => handleNavigation('members')}
+            />
+            <NavButton
+              label="Data Table"
+              isActive={page === 'dataTable'}
+              onClick={() => handleNavigation('dataTable')}
+            />
+          </nav>
+        </div>
       </div>
-    </header>
+    </>
   );
 };
 

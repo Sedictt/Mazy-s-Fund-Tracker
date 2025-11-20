@@ -30,8 +30,12 @@ const DailyTracker: React.FC<DailyTrackerProps> = ({ members, contributions, onA
               <li key={member.id} className="p-5">
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center space-x-4 min-w-0">
-                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-600 flex-shrink-0">
-                        {member.name.charAt(0)}
+                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-600 flex-shrink-0 overflow-hidden">
+                        {member.profilePicture ? (
+                          <img src={member.profilePicture} alt={member.name} className="w-full h-full object-cover" />
+                        ) : (
+                          member.name.charAt(0)
+                        )}
                       </div>
                       <p className="text-md font-medium text-gray-900 truncate">{member.name}</p>
                     </div>

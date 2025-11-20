@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import DailyTracker from './components/DailyTracker';
 import MemberList from './components/MemberList';
+import MembersPage from './components/MembersPage';
 import ContributionLog from './components/ContributionLog';
 import PayBalanceModal from './components/PayBalanceModal';
 import EditContributionModal from './components/EditContributionModal';
@@ -14,7 +15,7 @@ import { getTodayDateString, countContributionDays } from './utils/date';
 import { saveContributionToFirestore, deleteContributionFromFirestore, saveMultipleContributionsToFirestore, loadContributionsFromFirestore } from './firestoreContributions';
 import { loadMembersFromFirestore, saveMultipleMembersToFirestore, deleteMemberFromFirestore } from './firestoreMembers';
 
-type Page = 'dashboard' | 'dataTable';
+type Page = 'dashboard' | 'dataTable' | 'members';
 
 const App: React.FC = () => {
   const [members, setMembers] = useState<Member[]>([]);
@@ -74,6 +75,19 @@ const App: React.FC = () => {
     saveMultipleMembersToFirestore([newMember]).catch(error => {
       console.error('Failed to save member to Firestore', error);
     });
+  };
+
+  const updateMember = (id: string, name: string, profilePicture?: string) => {
+    const updatedMembers = members.map(m => 
+      m.id === id ? { ...m, name, ...(profilePicture !== undefined && { profilePicture }) } : m
+    );
+    setMembers(updatedMembers);
+    const updatedMember = updatedMembers.find(m => m.id === id);
+    if (updatedMember) {
+      saveMultipleMembersToFirestore([updatedMember]).catch(error => {
+        console.error('Failed to update member in Firestore', error);
+      });
+    }
   };
 
   const handleDeleteMember = (member: Member) => {
@@ -340,6 +354,13 @@ const App: React.FC = () => {
               </div>
             </div>
           </>
+        ) : page === 'members' ? (
+          <MembersPage
+            members={members}
+            onUpdateMember={updateMember}
+            onDeleteMember={handleDeleteMember}
+            onAddMember={addMember}
+          />
         ) : (
           <DataTablePage
             contributions={contributions}
