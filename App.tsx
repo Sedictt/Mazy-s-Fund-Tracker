@@ -152,7 +152,10 @@ const App: React.FC = () => {
           setUnreadMessageCount(prev => prev + newCount);
           
           // Play notification sound
-          playNotificationSound();
+          console.log('🔔 Playing notification sound for new message...');
+          playNotificationSound().catch(err => {
+            console.error('❌ Failed to play notification sound:', err);
+          });
         }
         
         previousMessageCount = messages.length;

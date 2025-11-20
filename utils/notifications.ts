@@ -46,33 +46,60 @@ export const areNotificationsSupported = (): boolean => {
   return 'Notification' in window;
 };
 
-// Play a notification sound using Web Audio API (fallback if mp3 doesn't load)
+// Pre-create audio instance for better reliability
+let notificationAudio: HTMLAudioElement | null = null;
+
+// Initialize audio on first call
+const initializeAudio = () => {
+  if (!notificationAudio) {
+    // Try with the current origin to build the full URL
+    const audioUrl = `${window.location.origin}/notification.mp3`;
+    console.log('🔊 Attempting to load audio from:', audioUrl);
+    
+    notificationAudio = new Audio(audioUrl);
+    notificationAudio.volume = 0.5;
+    
+    // Add error event listener
+    notificationAudio.addEventListener('error', (e) => {
+      console.error('❌ Audio loading error:', e);
+      console.error('Audio error details:', notificationAudio?.error);
+    });
+    
+    // Add loaded event listener
+    notificationAudio.addEventListener('canplaythrough', () => {
+      console.log('✅ Audio loaded successfully');
+    });
+    
+    // Preload the audio
+    notificationAudio.load();
+  }
+  return notificationAudio;
+};
+
+// Play the custom notification sound
 export const playNotificationSound = async (): Promise<void> => {
   try {
-    // First try to play the MP3 file
-    const audio = new Audio('/notification.mp3');
-    audio.volume = 1.0;
-    await audio.play();
+    const audio = initializeAudio();
+    // Reset to start if already playing
+    audio.currentTime = 0;
+    const playPromise = audio.play();
+    
+    if (playPromise !== undefined) {
+      await playPromise;
+      console.log('✅ Notification sound played successfully');
+    }
   } catch (error) {
-    // Fallback: Generate a beep sound using Web Audio API
+    console.error('❌ Could not play notification sound:', error);
+    // If it fails, try creating a fresh audio element with full URL
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.frequency.value = 800; // Frequency in Hz
-      oscillator.type = 'sine';
-
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.2);
-    } catch (fallbackError) {
-      console.log('Could not play notification sound:', fallbackError);
+      const audioUrl = `${window.location.origin}/notification.mp3`;
+      console.log('🔄 Retrying with fresh audio element:', audioUrl);
+      const freshAudio = new Audio(audioUrl);
+      freshAudio.volume = 0.5;
+      await freshAudio.play();
+      console.log('✅ Notification sound played with fresh audio element');
+    } catch (retryError) {
+      console.error('❌ Retry also failed:', retryError);
     }
   }
 };
