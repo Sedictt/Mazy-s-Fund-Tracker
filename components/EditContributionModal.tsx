@@ -55,7 +55,7 @@ const EditContributionModal: React.FC<EditContributionModalProps> = ({
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={isEditMode ? "Edit Contribution" : "Add Contribution"} icon={icon}>
+    <Modal isOpen={isOpen} onClose={onClose} title={isEditMode ? "Edit Contribution" : "Add Contribution"} icon={icon} zIndex="z-[60]">
       <div className="mt-4 space-y-4">
         
         <div>

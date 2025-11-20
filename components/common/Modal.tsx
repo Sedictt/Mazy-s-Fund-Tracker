@@ -6,9 +6,10 @@ interface ModalProps {
   title: string;
   children: React.ReactNode;
   icon?: React.ReactNode;
+  zIndex?: string;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, icon }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, icon, zIndex = 'z-10' }) => {
   if (!isOpen) return null;
 
   const defaultIcon = (
@@ -18,7 +19,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, icon })
   );
 
   return (
-    <div className="fixed inset-0 z-10 overflow-y-auto">
+    <div className={`fixed inset-0 ${zIndex} overflow-y-auto`}>
       <div className="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
         
         {/* Background overlay */}
