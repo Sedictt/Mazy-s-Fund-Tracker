@@ -41,9 +41,13 @@ const Header: React.FC<HeaderProps> = ({ page, onSetPage, onLogout, currentUser,
         <div className="container mx-auto px-4 md:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <div className="w-auto h-10 sm:h-12 flex items-center justify-center flex-shrink-0">
+              <button 
+                onClick={() => handleNavigation('dashboard')}
+                className="w-auto h-10 sm:h-12 flex items-center justify-center flex-shrink-0 hover:opacity-80 transition-opacity"
+                title="Go to Dashboard"
+              >
                 <img src="/logo.png" alt="Mazy Fund Tracker Logo" className="h-full w-auto object-contain" />
-              </div>
+              </button>
               <div>
                 {/* <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Mazy Fund Tracker</h1>
                 <p className="text-sm text-gray-500">Your daily contributions, simplified.</p> */}
