@@ -2,11 +2,41 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# Mazy Fund Tracker
 
-This contains everything you need to run your app locally.
+A comprehensive fund tracking application with role-based access for administrators and members.
 
-View your app in AI Studio: https://ai.studio/apps/drive/14oIlDXnI3BXaw8F02-_VOnjKQL2hU7nX
+## Features
+
+- **Admin Dashboard**: Full management capabilities for contributions, members, and fund tracking
+- **Member View**: Summary view showing total contributions and balances
+- **Role-Based Access**: Different interfaces for administrators and members
+- **Profile Management**: Upload and manage profile pictures
+- **Data Import/Export**: Import contribution data via CSV
+- **Real-time Tracking**: Daily contribution tracking with balance calculations
+
+## Login Credentials
+
+### Admin Access
+- **Username**: `mazy`
+- **Password**: `mazy123`
+- **Permissions**: Full access to dashboard, data table, member management, and all features
+
+### Member Access
+Members have read-only access to view their contributions and fund summary.
+
+| Username | Password     | Display Name |
+|----------|--------------|--------------|
+| bryan    | bryan123     | Bryan        |
+| deign    | deign123     | Deign        |
+| jv       | jv123        | Jv           |
+| lorraine | lorraine123  | Lorraine     |
+| margaux  | margaux123   | Margaux      |
+| raineer  | raineer123   | Raineer      |
+| sean     | sean123      | Sean         |
+| mark     | mark123      | Mark         |
+
+**Member Permissions**: View-only access to summary page showing contributions and balances
 
 ## Run Locally
 

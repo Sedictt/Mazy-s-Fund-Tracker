@@ -11,13 +11,19 @@ import PayBalanceModal from './components/PayBalanceModal';
 import EditContributionModal from './components/EditContributionModal';
 import ConfirmationModal from './components/common/ConfirmationModal';
 import DataTablePage from './components/DataTablePage';
+import LoginPage from './components/LoginPage';
+import MemberSummaryPage from './components/MemberSummaryPage';
 import { getTodayDateString, countContributionDays } from './utils/date';
 import { saveContributionToFirestore, deleteContributionFromFirestore, saveMultipleContributionsToFirestore, loadContributionsFromFirestore } from './firestoreContributions';
 import { loadMembersFromFirestore, saveMultipleMembersToFirestore, deleteMemberFromFirestore } from './firestoreMembers';
 
 type Page = 'dashboard' | 'dataTable' | 'members';
+type UserRole = 'admin' | 'member';
 
 const App: React.FC = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string>('');
+  const [userRole, setUserRole] = useState<UserRole>('member');
   const [members, setMembers] = useState<Member[]>([]);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [goal, setGoal] = useState<number>(5000);
@@ -28,6 +34,19 @@ const App: React.FC = () => {
   const [page, setPage] = useState<Page>('dashboard');
 
   const CONTRIBUTION_AMOUNT = 10;
+
+  const handleLogin = (username: string, role: UserRole) => {
+    setCurrentUser(username);
+    setUserRole(role);
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setCurrentUser('');
+    setUserRole('member');
+    setPage('dashboard');
+  };
 
   useEffect(() => {
     loadContributionsFromFirestore()
@@ -313,9 +332,27 @@ const App: React.FC = () => {
     };
   }, [contributions, members]);
 
+  // Prepare members with totals and balances for member view
+  const membersWithTotals = members.map(member => ({
+    ...member,
+    totalContributions: memberTotals.get(member.id) || 0,
+    balance: balances.get(member.id) || 0,
+  }));
+
+  // Show login page if not logged in
+  if (!isLoggedIn) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
+  // Show member summary page for non-admin users
+  if (userRole === 'member') {
+    return <MemberSummaryPage members={membersWithTotals} currentUsername={currentUser} onLogout={handleLogout} />;
+  }
+
+  // Admin view - full dashboard
   return (
     <div className="min-h-screen bg-violet-50 text-gray-800">
-      <Header page={page} onSetPage={setPage} />
+      <Header page={page} onSetPage={setPage} onLogout={handleLogout} currentUser={currentUser} />
       <main className="container mx-auto p-4 md:p-6 lg:p-8">
         {page === 'dashboard' ? (
           <>
