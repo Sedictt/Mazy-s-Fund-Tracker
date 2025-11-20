@@ -19,6 +19,7 @@ import { saveContributionToFirestore, deleteContributionFromFirestore, saveMulti
 import { loadMembersFromFirestore, saveMultipleMembersToFirestore, deleteMemberFromFirestore } from './firestoreMembers';
 import { updateMemberCredentials } from './memberCredentials';
 import { requestNotificationPermission, showContributionNotification } from './utils/notifications';
+import { subscribeToMessages, ChatMessage } from './firestoreMessages';
 
 type Page = 'dashboard' | 'dataTable' | 'members';
 type UserRole = 'admin' | 'member';
@@ -41,6 +42,7 @@ const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [isDailyTrackerExpanded, setIsDailyTrackerExpanded] = useState(true);
   const [isDashboardExpanded, setIsDashboardExpanded] = useState(false);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
 
   const CONTRIBUTION_AMOUNT = 10;
 
@@ -122,6 +124,35 @@ const App: React.FC = () => {
         console.error('Failed to load members from Firestore', error);
       });
   }, []);
+
+  // Subscribe to chat messages for notifications
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    let lastMessageTime = Date.now();
+    const audio = new Audio('/notification.mp3');
+
+    const unsubscribe = subscribeToMessages((messages: ChatMessage[]) => {
+      if (messages.length > 0) {
+        const latestMessage = messages[messages.length - 1];
+        const messageTime = new Date(latestMessage.timestamp).getTime();
+        
+        // Check if this is a new message (not from current user and chat is closed)
+        if (
+          messageTime > lastMessageTime &&
+          latestMessage.userName !== currentUser &&
+          !isChatOpen
+        ) {
+          setUnreadMessageCount(prev => prev + 1);
+          
+          // Play notification sound
+          audio.play().catch(err => console.log('Could not play notification sound:', err));
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [isLoggedIn, currentUser, isChatOpen]);
 
   const fundStartDate = useMemo(() => {
     if (contributions.length === 0) {
@@ -433,7 +464,17 @@ const App: React.FC = () => {
   // Admin view - full dashboard
   return (
     <div className="min-h-screen bg-violet-50 text-gray-800">
-      <Header page={page} onSetPage={setPage} onLogout={handleLogout} currentUser={currentUser} onOpenChat={() => setIsChatOpen(true)} />
+      <Header 
+        page={page} 
+        onSetPage={setPage} 
+        onLogout={handleLogout} 
+        currentUser={currentUser} 
+        onOpenChat={() => {
+          setIsChatOpen(true);
+          setUnreadMessageCount(0); // Reset unread count when opening chat
+        }} 
+        unreadCount={unreadMessageCount}
+      />
       <main className="container mx-auto p-4 md:p-6 lg:p-8">
         {page === 'dashboard' ? (
           <>
