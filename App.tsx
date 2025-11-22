@@ -656,7 +656,9 @@ const App: React.FC = () => {
       {payingMember && (
         <PayBalanceModal
             isOpen={!!payingMember}
-            onClose={() => setPayingMember(null)}
+            onClose={() => {
+              setPayingMember(null);
+            }}
             member={payingMember}
             balanceOwed={balances.get(payingMember.id) || 0}
             onRecordPayment={recordBalancePayment}
@@ -724,7 +726,11 @@ const App: React.FC = () => {
                 memberTotals={memberTotals}
                 balances={balances}
                 onAddMember={addMember}
-                onPayBalance={setPayingMember}
+                onPayBalance={(member) => {
+                  // Close the member list overlay before opening payment modal
+                  setShowMemberList(false);
+                  setPayingMember(member);
+                }}
                 onDeleteMember={handleDeleteMember}
               />
             </div>

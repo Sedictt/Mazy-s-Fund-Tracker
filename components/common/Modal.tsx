@@ -9,7 +9,7 @@ interface ModalProps {
   zIndex?: string;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, icon, zIndex = 'z-10' }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, icon, zIndex = 'z-40' }) => {
   if (!isOpen) return null;
 
   const defaultIcon = (
