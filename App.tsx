@@ -140,36 +140,34 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!isLoggedIn) return;
 
-    let previousMessageCount = 0;
-
     const unsubscribe = subscribeToMessages((messages: ChatMessage[]) => {
-      // Skip if this is the first load
-      if (previousMessageCount === 0) {
-        previousMessageCount = messages.length;
-        return;
-      }
+      const lastReadTimestampStr = localStorage.getItem(`lastReadTimestamp_${currentUser}`);
+      const lastReadTimestamp = lastReadTimestampStr ? new Date(lastReadTimestampStr).getTime() : 0;
 
-      // Check if there are new messages
-      if (messages.length > previousMessageCount) {
-        const newMessages = messages.slice(previousMessageCount);
-
-        // Check if any new message is from someone else
-        const hasNewMessageFromOthers = newMessages.some(
-          msg => msg.userName !== currentUser
-        );
-
-        if (hasNewMessageFromOthers && !isChatOpen) {
-          const newCount = newMessages.filter(msg => msg.userName !== currentUser).length;
-          setUnreadMessageCount(prev => prev + newCount);
-
-          // Play notification sound
-          console.log('🔔 Playing notification sound for new message...');
-          playNotificationSound().catch(err => {
-            console.error('❌ Failed to play notification sound:', err);
-          });
+      if (isChatOpen) {
+        // If chat is open, mark all as read immediately
+        if (messages.length > 0) {
+          const latestMsg = messages[messages.length - 1];
+          localStorage.setItem(`lastReadTimestamp_${currentUser}`, new Date(latestMsg.timestamp).toISOString());
         }
+        setUnreadMessageCount(0);
+      } else {
+        // Calculate unread messages
+        const unreadCount = messages.filter(msg => {
+          const msgTime = new Date(msg.timestamp).getTime();
+          return msgTime > lastReadTimestamp && msg.userName !== currentUser;
+        }).length;
 
-        previousMessageCount = messages.length;
+        setUnreadMessageCount(prev => {
+          // Play sound if we have *more* unread messages than before
+          if (unreadCount > prev) {
+            console.log('🔔 Playing notification sound for new message...');
+            playNotificationSound().catch(err => {
+              console.error('❌ Failed to play notification sound:', err);
+            });
+          }
+          return unreadCount;
+        });
       }
     });
 
@@ -501,6 +499,7 @@ const App: React.FC = () => {
           onUpdateProfile={handleMemberUpdateProfile}
           onUpdateCredentials={handleMemberUpdateCredentials}
           onOpenChat={() => setIsChatOpen(true)}
+          unreadCount={unreadMessageCount}
           wishlistItems={wishlistItems}
           onAddWishlistItem={handleAddWishlistItem}
           onDeleteWishlistItem={handleDeleteWishlistItem}

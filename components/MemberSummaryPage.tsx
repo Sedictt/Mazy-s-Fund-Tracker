@@ -13,6 +13,7 @@ interface MemberSummaryPageProps {
   onUpdateProfile: (displayName: string, profilePicture?: string) => void;
   onUpdateCredentials: (newUsername: string, newPassword: string) => void;
   onOpenChat: () => void;
+  unreadCount?: number;
   wishlistItems: WishlistItem[];
   onAddWishlistItem: (itemName: string, price: number) => void;
   onDeleteWishlistItem: (id: string) => void;
@@ -26,6 +27,7 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
   onUpdateProfile,
   onUpdateCredentials,
   onOpenChat,
+  unreadCount = 0,
   wishlistItems,
   onAddWishlistItem,
   onDeleteWishlistItem,
@@ -46,16 +48,16 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
   React.useEffect(() => {
     const campaignEndDate = new Date('2025-12-05').getTime(); // 7 days from Nov 27
     const now = Date.now();
-    const hasSeenAnnouncement = localStorage.getItem('hasSeenWishlistAnnouncement');
+    const hasSeenAnnouncement = localStorage.getItem(`hasSeenWishlistAnnouncement_${currentUsername}`);
 
     if (now < campaignEndDate && !hasSeenAnnouncement) {
       setIsAnnouncementsOpen(true);
     }
-  }, []);
+  }, [currentUsername]);
 
   const handleCloseAnnouncements = () => {
     setIsAnnouncementsOpen(false);
-    localStorage.setItem('hasSeenWishlistAnnouncement', 'true');
+    localStorage.setItem(`hasSeenWishlistAnnouncement_${currentUsername}`, 'true');
   };
 
   return (
@@ -63,17 +65,22 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
             <img src="/logo.png" alt="Mazy Fund Tracker" className="h-10 sm:h-12 w-auto" />
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3">
               <button
                 onClick={onOpenChat}
-                className="p-2 rounded-md text-gray-600 hover:bg-violet-100 transition-colors"
+                className="p-2 rounded-md text-gray-600 hover:bg-violet-100 transition-colors relative"
                 title="Group Chat"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </button>
               <button
                 onClick={() => setShowWishlist(true)}
@@ -115,12 +122,12 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
               </button>
             </div>
           </div>
-          <div className="mb-2">
+          <div className="mb-2 text-center sm:text-left">
             <p className="text-sm text-gray-600">Logged in as</p>
             <p className="text-lg font-semibold text-gray-800">{currentUsername}</p>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">Fund Summary</h1>
-          <p className="text-gray-600">Overview of contributions and balances</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 text-center sm:text-left">Fund Summary</h1>
+          <p className="text-gray-600 text-center sm:text-left">Overview of contributions and balances</p>
         </div>
 
         {/* Summary Cards */}
@@ -151,7 +158,7 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
         {currentMember && (
           <Card className="mb-6 bg-gradient-to-br from-violet-50 to-purple-50">
             <div className="p-6">
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-6 text-center sm:text-left">
                 {currentMember.profilePicture ? (
                   <img
                     src={currentMember.profilePicture}
@@ -171,7 +178,7 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-white rounded-lg p-4 shadow-sm">
                   <p className="text-xs text-gray-500 mb-1">Total Contributions</p>
                   <p className="text-2xl font-bold text-green-600">₱{currentMember.totalContributions.toFixed(2)}</p>

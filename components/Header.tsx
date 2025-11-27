@@ -40,16 +40,16 @@ const Header: React.FC<HeaderProps> = ({ page, onSetPage, onLogout, currentUser,
   React.useEffect(() => {
     const campaignEndDate = new Date('2025-12-05').getTime(); // 7 days from Nov 27
     const now = Date.now();
-    const hasSeenAnnouncement = localStorage.getItem('hasSeenWishlistAnnouncement');
+    const hasSeenAnnouncement = localStorage.getItem(`hasSeenWishlistAnnouncement_${currentUser}`);
 
     if (now < campaignEndDate && !hasSeenAnnouncement) {
       setIsAnnouncementsOpen(true);
     }
-  }, []);
+  }, [currentUser]);
 
   const handleCloseAnnouncements = () => {
     setIsAnnouncementsOpen(false);
-    localStorage.setItem('hasSeenWishlistAnnouncement', 'true');
+    localStorage.setItem(`hasSeenWishlistAnnouncement_${currentUser}`, 'true');
   };
 
   return (
