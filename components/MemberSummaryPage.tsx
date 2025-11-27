@@ -64,70 +64,78 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
     <div className="min-h-screen bg-gradient-to-br from-violet-50 to-purple-50 p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
-            <img src="/logo.png" alt="Mazy Fund Tracker" className="h-10 sm:h-12 w-auto" />
-            <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between gap-2 mb-6">
+            <img src="/logo.png" alt="Mazy Fund Tracker" className="h-8 sm:h-10 w-auto" />
+
+            <div className="flex items-center gap-1 sm:gap-2">
               <button
                 onClick={onOpenChat}
-                className="p-2 rounded-md text-gray-600 hover:bg-violet-100 transition-colors relative"
+                className="p-2 rounded-full text-gray-600 hover:bg-violet-100 transition-colors relative"
                 title="Group Chat"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </button>
+
               <button
                 onClick={() => setShowWishlist(true)}
-                className="p-2 rounded-md text-gray-600 hover:bg-violet-100 transition-colors relative"
+                className="p-2 rounded-full text-gray-600 hover:bg-violet-100 transition-colors relative"
                 title="Wishlist"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6 text-red-500" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1 rounded-full">
+                <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1 rounded-full">
                   NEW
                 </span>
               </button>
+
               <button
                 onClick={() => setIsAnnouncementsOpen(true)}
-                className="p-2 rounded-md text-gray-600 hover:bg-violet-100 transition-colors relative"
+                className="p-2 rounded-full text-gray-600 hover:bg-violet-100 transition-colors relative"
                 title="What's New"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                 </svg>
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
+
               <button
                 onClick={() => setShowSettings(true)}
-                className="p-2 rounded-md text-gray-600 hover:bg-violet-100 transition-colors"
+                className="p-2 rounded-full text-gray-600 hover:bg-violet-100 transition-colors"
                 title="Profile Settings"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </button>
+
               <button
                 onClick={onLogout}
-                className="px-3 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 rounded-md transition-colors"
+                className="p-2 rounded-full text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors"
+                title="Logout"
               >
-                Logout
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
               </button>
             </div>
           </div>
-          <div className="mb-2 text-center sm:text-left">
-            <p className="text-sm text-gray-600">Logged in as</p>
-            <p className="text-lg font-semibold text-gray-800">{currentUsername}</p>
+
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Fund Summary</h1>
+            <p className="text-sm text-gray-500">Overview of contributions and balances</p>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 text-center sm:text-left">Fund Summary</h1>
-          <p className="text-gray-600 text-center sm:text-left">Overview of contributions and balances</p>
         </div>
 
         {/* Summary Cards */}
