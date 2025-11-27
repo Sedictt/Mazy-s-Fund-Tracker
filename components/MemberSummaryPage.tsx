@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import Card from './common/Card';
-import { Member } from '../types';
+import { Member, WishlistItem } from '../types';
 import MemberProfileSettings from './MemberProfileSettings';
+import Wishlist from './Wishlist';
+import AnnouncementsModal from './AnnouncementsModal';
+
 
 interface MemberSummaryPageProps {
   members: Member[];
@@ -10,24 +13,50 @@ interface MemberSummaryPageProps {
   onUpdateProfile: (displayName: string, profilePicture?: string) => void;
   onUpdateCredentials: (newUsername: string, newPassword: string) => void;
   onOpenChat: () => void;
+  wishlistItems: WishlistItem[];
+  onAddWishlistItem: (itemName: string, price: number) => void;
+  onDeleteWishlistItem: (id: string) => void;
+  onEditWishlistItem: (item: WishlistItem) => void;
 }
 
-const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({ 
-  members, 
-  currentUsername, 
+const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
+  members,
+  currentUsername,
   onLogout,
   onUpdateProfile,
   onUpdateCredentials,
-  onOpenChat
+  onOpenChat,
+  wishlistItems,
+  onAddWishlistItem,
+  onDeleteWishlistItem,
+  onEditWishlistItem
 }) => {
   const [showSettings, setShowSettings] = useState(false);
+  const [showWishlist, setShowWishlist] = useState(false);
+  const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
+
   // Find current member
   const currentMember = members.find(m => m.name.toLowerCase() === currentUsername.toLowerCase());
-  
+
   // Calculate summary stats
   const totalMembers = members.length;
   const totalContributions = members.reduce((sum, m) => sum + m.totalContributions, 0);
   const averageContribution = totalMembers > 0 ? totalContributions / totalMembers : 0;
+
+  React.useEffect(() => {
+    const campaignEndDate = new Date('2025-12-05').getTime(); // 7 days from Nov 27
+    const now = Date.now();
+    const hasSeenAnnouncement = localStorage.getItem('hasSeenWishlistAnnouncement');
+
+    if (now < campaignEndDate && !hasSeenAnnouncement) {
+      setIsAnnouncementsOpen(true);
+    }
+  }, []);
+
+  const handleCloseAnnouncements = () => {
+    setIsAnnouncementsOpen(false);
+    localStorage.setItem('hasSeenWishlistAnnouncement', 'true');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 to-purple-50 p-4 sm:p-6">
@@ -45,6 +74,28 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
+              </button>
+              <button
+                onClick={() => setShowWishlist(true)}
+                className="p-2 rounded-md text-gray-600 hover:bg-violet-100 transition-colors relative"
+                title="Wishlist"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1 rounded-full">
+                  NEW
+                </span>
+              </button>
+              <button
+                onClick={() => setIsAnnouncementsOpen(true)}
+                className="p-2 rounded-md text-gray-600 hover:bg-violet-100 transition-colors relative"
+                title="What's New"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                </svg>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
               <button
                 onClick={() => setShowSettings(true)}
@@ -119,7 +170,7 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
                   <h3 className="text-2xl font-bold text-gray-800">{currentMember.name}</h3>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white rounded-lg p-4 shadow-sm">
                   <p className="text-xs text-gray-500 mb-1">Total Contributions</p>
@@ -190,6 +241,12 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
         </div>
       </div>
 
+      {/* Announcements Modal */}
+      <AnnouncementsModal
+        isOpen={isAnnouncementsOpen}
+        onClose={handleCloseAnnouncements}
+      />
+
       {/* Profile Settings Modal */}
       {showSettings && currentMember && (
         <MemberProfileSettings
@@ -200,6 +257,35 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
           onUpdateCredentials={onUpdateCredentials}
           onClose={() => setShowSettings(false)}
         />
+      )}
+
+      {/* Wishlist Modal */}
+      {showWishlist && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+              <h2 className="text-xl font-bold text-gray-800">Wishlist</h2>
+              <button
+                onClick={() => setShowWishlist(false)}
+                className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4">
+              <Wishlist
+                items={wishlistItems}
+                members={members}
+                currentUser={currentUsername}
+                onAddItem={onAddWishlistItem}
+                onDeleteItem={onDeleteWishlistItem}
+                onEditItem={onEditWishlistItem}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

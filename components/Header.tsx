@@ -8,6 +8,7 @@ interface HeaderProps {
   currentUser: string;
   onOpenChat: () => void;
   unreadCount?: number;
+  onOpenWishlist: () => void;
 }
 
 const NavButton: React.FC<{
@@ -27,7 +28,7 @@ const NavButton: React.FC<{
   );
 };
 
-const Header: React.FC<HeaderProps> = ({ page, onSetPage, onLogout, currentUser, onOpenChat, unreadCount = 0 }) => {
+const Header: React.FC<HeaderProps> = ({ page, onSetPage, onLogout, currentUser, onOpenChat, unreadCount = 0, onOpenWishlist }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
 
@@ -36,13 +37,28 @@ const Header: React.FC<HeaderProps> = ({ page, onSetPage, onLogout, currentUser,
     setIsMenuOpen(false);
   };
 
+  React.useEffect(() => {
+    const campaignEndDate = new Date('2025-12-05').getTime(); // 7 days from Nov 27
+    const now = Date.now();
+    const hasSeenAnnouncement = localStorage.getItem('hasSeenWishlistAnnouncement');
+
+    if (now < campaignEndDate && !hasSeenAnnouncement) {
+      setIsAnnouncementsOpen(true);
+    }
+  }, []);
+
+  const handleCloseAnnouncements = () => {
+    setIsAnnouncementsOpen(false);
+    localStorage.setItem('hasSeenWishlistAnnouncement', 'true');
+  };
+
   return (
     <>
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 md:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <button 
+              <button
                 onClick={() => handleNavigation('dashboard')}
                 className="w-auto h-10 sm:h-12 flex items-center justify-center flex-shrink-0 hover:opacity-80 transition-opacity"
                 title="Go to Dashboard"
@@ -76,6 +92,21 @@ const Header: React.FC<HeaderProps> = ({ page, onSetPage, onLogout, currentUser,
                 <p className="text-xs text-gray-500">Admin</p>
                 <p className="text-sm font-semibold text-gray-700">{currentUser}</p>
               </div>
+
+              {/* Wishlist Button */}
+              <button
+                onClick={onOpenWishlist}
+                className="p-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500 relative"
+                aria-label="Open wishlist"
+                title="Wishlist"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1 rounded-full">
+                  NEW
+                </span>
+              </button>
 
               {/* Chat Button */}
               <button
@@ -119,6 +150,21 @@ const Header: React.FC<HeaderProps> = ({ page, onSetPage, onLogout, currentUser,
 
             {/* Announcements and Mobile Menu Buttons */}
             <div className="flex sm:hidden items-center gap-2">
+              {/* Wishlist Button (Mobile) */}
+              <button
+                onClick={onOpenWishlist}
+                className="p-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500 relative"
+                aria-label="Open wishlist"
+                title="Wishlist"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1 rounded-full">
+                  NEW
+                </span>
+              </button>
+
               {/* Chat Button (Mobile) */}
               <button
                 onClick={onOpenChat}
@@ -166,23 +212,22 @@ const Header: React.FC<HeaderProps> = ({ page, onSetPage, onLogout, currentUser,
       </header>
 
       {/* Announcements Modal */}
-      <AnnouncementsModal 
+      <AnnouncementsModal
         isOpen={isAnnouncementsOpen}
-        onClose={() => setIsAnnouncementsOpen(false)}
+        onClose={handleCloseAnnouncements}
       />
 
       {/* Mobile Sidebar Overlay */}
       {isMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 sm:hidden"
           onClick={() => setIsMenuOpen(false)}
         />
       )}
 
       {/* Mobile Sidebar */}
-      <div className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 sm:hidden ${
-        isMenuOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}>
+      <div className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 sm:hidden ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}>
         <div className="p-4">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-bold text-gray-800">Menu</h2>
@@ -196,7 +241,7 @@ const Header: React.FC<HeaderProps> = ({ page, onSetPage, onLogout, currentUser,
               </svg>
             </button>
           </div>
-          
+
           <nav className="flex flex-col space-y-2">
             <NavButton
               label="Dashboard"
@@ -213,7 +258,7 @@ const Header: React.FC<HeaderProps> = ({ page, onSetPage, onLogout, currentUser,
               isActive={page === 'dataTable'}
               onClick={() => handleNavigation('dataTable')}
             />
-            
+
             {/* User info and Logout in mobile menu */}
             <div className="pt-4 mt-4 border-t border-gray-200">
               <div className="p-3 bg-violet-50 rounded-lg mb-2">

@@ -12,3 +12,11 @@ export interface Contribution {
   date: string; // YYYY-MM-DD format
   amount: number;
 }
+
+export interface WishlistItem {
+  id: string;
+  memberId: string;
+  itemName: string;
+  price: number;
+  createdAt: string; // ISO string
+}
