@@ -4,6 +4,7 @@ export interface Member {
   name: string;
   joinDate: string; // ISO string
   profilePicture?: string; // Base64 encoded image or URL
+  fcmToken?: string; // Firebase Cloud Messaging token
 }
 
 export interface Contribution {

@@ -55,7 +55,7 @@ const App: React.FC = () => {
     setIsLoggedIn(true);
 
     // Request notification permission on login
-    requestNotificationPermission();
+    // requestNotificationPermission(); // Moved to useEffect
   };
 
   const handleLogout = () => {
@@ -103,7 +103,7 @@ const App: React.FC = () => {
       setIsLoggedIn(true);
 
       // Request notification permission after login
-      requestNotificationPermission();
+      // requestNotificationPermission(); // Moved to useEffect
     }
 
     // Load data from Firestore
@@ -135,6 +135,16 @@ const App: React.FC = () => {
         console.error('Failed to load wishlist items from Firestore', error);
       });
   }, []);
+
+  // Request notification permission when user is logged in and members are loaded
+  useEffect(() => {
+    if (isLoggedIn && currentUser && members.length > 0) {
+      const currentMember = members.find(m => m.name === currentUser);
+      if (currentMember) {
+        requestNotificationPermission(currentMember.id);
+      }
+    }
+  }, [isLoggedIn, currentUser, members]);
 
   // Subscribe to chat messages for notifications
   useEffect(() => {

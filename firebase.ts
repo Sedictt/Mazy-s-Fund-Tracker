@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { getMessaging } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCkBhPCkP-6oFHyZDKPX_CT6OeMn2FzO2Q',
@@ -27,7 +28,8 @@ try {
 
 const db = getFirestore(app);
 const storage = getStorage(app);
+const messaging = getMessaging(app);
 
 console.log('Firebase initialized');
 
-export { app, analytics, db, storage };
+export { app, analytics, db, storage, messaging };

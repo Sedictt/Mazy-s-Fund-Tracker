@@ -1,105 +1,59 @@
-// Request notification permission from the user
-export const requestNotificationPermission = async (): Promise<boolean> => {
+import { messaging, db } from '../firebase';
+import { getToken } from 'firebase/messaging';
+import { doc, updateDoc } from 'firebase/firestore';
+
+// Replace with your VAPID Key from Firebase Console -> Project Settings -> Cloud Messaging -> Web Configuration
+const VAPID_KEY = 'BPj_Zts-fmEnBOk8ebr-3ln5yKlvoI9qNoI7FPoZC4Jy7fQL8tS4zzorAp2Nln1IGWwI6rc1C0XSXG9S8vuahas';
+
+export const requestNotificationPermission = async (memberId?: string) => {
   if (!('Notification' in window)) {
-    console.log('This browser does not support notifications');
-    return false;
+    console.log('This browser does not support desktop notification');
+    return;
   }
 
-  if (Notification.permission === 'granted') {
-    return true;
-  }
-
-  if (Notification.permission !== 'denied') {
-    const permission = await Notification.requestPermission();
-    return permission === 'granted';
-  }
-
-  return false;
-};
-
-// Show a contribution success notification
-export const showContributionNotification = (memberName: string, amount: number) => {
-  if (Notification.permission === 'granted') {
-    const notification = new Notification('Contribution Recorded! 🎉', {
-      body: `${memberName} has successfully contributed ₱${amount.toFixed(2)}`,
-      icon: '/logo.png',
-      badge: '/logo.png',
-      tag: 'contribution-success',
-      requireInteraction: false,
-    });
-
-    // Auto-close after 5 seconds
-    setTimeout(() => {
-      notification.close();
-    }, 5000);
-
-    // Optional: Handle click on notification
-    notification.onclick = () => {
-      window.focus();
-      notification.close();
-    };
-  }
-};
-
-// Check if notifications are supported
-export const areNotificationsSupported = (): boolean => {
-  return 'Notification' in window;
-};
-
-// Pre-create audio instance for better reliability
-let notificationAudio: HTMLAudioElement | null = null;
-
-// Initialize audio on first call
-const initializeAudio = () => {
-  if (!notificationAudio) {
-    // Try with the current origin to build the full URL
-    const audioUrl = `${window.location.origin}/notification.mp3`;
-    console.log('🔊 Attempting to load audio from:', audioUrl);
-    
-    notificationAudio = new Audio(audioUrl);
-    notificationAudio.volume = 0.5;
-    
-    // Add error event listener
-    notificationAudio.addEventListener('error', (e) => {
-      console.error('❌ Audio loading error:', e);
-      console.error('Audio error details:', notificationAudio?.error);
-    });
-    
-    // Add loaded event listener
-    notificationAudio.addEventListener('canplaythrough', () => {
-      console.log('✅ Audio loaded successfully');
-    });
-    
-    // Preload the audio
-    notificationAudio.load();
-  }
-  return notificationAudio;
-};
-
-// Play the custom notification sound
-export const playNotificationSound = async (): Promise<void> => {
   try {
-    const audio = initializeAudio();
-    // Reset to start if already playing
-    audio.currentTime = 0;
-    const playPromise = audio.play();
-    
-    if (playPromise !== undefined) {
-      await playPromise;
-      console.log('✅ Notification sound played successfully');
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      console.log('Notification permission granted.');
+
+      if (memberId) {
+        // Get FCM Token
+        const token = await getToken(messaging, {
+          vapidKey: VAPID_KEY
+        });
+
+        if (token) {
+          console.log('FCM Token:', token);
+          // Save token to Firestore
+          await updateDoc(doc(db, 'members', memberId), {
+            fcmToken: token
+          });
+        } else {
+          console.log('No registration token available. Request permission to generate one.');
+        }
+      }
+    } else {
+      console.log('Unable to get permission to notify.');
     }
   } catch (error) {
-    console.error('❌ Could not play notification sound:', error);
-    // If it fails, try creating a fresh audio element with full URL
-    try {
-      const audioUrl = `${window.location.origin}/notification.mp3`;
-      console.log('🔄 Retrying with fresh audio element:', audioUrl);
-      const freshAudio = new Audio(audioUrl);
-      freshAudio.volume = 0.5;
-      await freshAudio.play();
-      console.log('✅ Notification sound played with fresh audio element');
-    } catch (retryError) {
-      console.error('❌ Retry also failed:', retryError);
-    }
+    console.error('An error occurred while retrieving token or requesting permission: ', error);
+  }
+};
+
+export const showContributionNotification = (memberName: string, amount: number) => {
+  if (Notification.permission === 'granted') {
+    new Notification('New Contribution', {
+      body: `${memberName} contributed ₱${amount}`,
+      icon: '/logo.png'
+    });
+  }
+};
+
+export const playNotificationSound = async () => {
+  try {
+    const audio = new Audio('/notification.mp3');
+    await audio.play();
+  } catch (error) {
+    console.error('Error playing notification sound:', error);
   }
 };
