@@ -74,8 +74,6 @@ exports.sendChatNotification = onDocumentCreated(
         return;
       }
 
-      const senderProfilePic = messageData.profilePicture || "/logo.png";
-
       const message = {
         tokens: tokens,
         notification: {
@@ -84,16 +82,12 @@ exports.sendChatNotification = onDocumentCreated(
         },
         webpush: {
           notification: {
-            icon: senderProfilePic,
+            icon: "/logo.png",
             badge: "/logo.png",
-            vibrate: [200, 100, 200],
           },
           fcmOptions: {
-            link: "https://your-app-url.com",
+            link: "https://aetheria-4a391.web.app",
           },
-        },
-        data: {
-          click_action: "https://your-app-url.com",
         },
       };
 

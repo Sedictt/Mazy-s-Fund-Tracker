@@ -6,13 +6,13 @@ import Modal from './common/Modal';
 
 interface GroupChatProps {
   currentUser: string;
+  currentUserId: string;
   userRole: 'admin' | 'member';
   userProfilePicture?: string;
-  currentMemberId?: string;
   onClose: () => void;
 }
 
-const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfilePicture, currentMemberId, onClose }) => {
+const GroupChat: React.FC<GroupChatProps> = ({ currentUser, currentUserId, userRole, userProfilePicture, onClose }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -42,6 +42,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -104,8 +105,8 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
               onClick={() => {
                 const handlePermission = async () => {
                   try {
-                    if (currentMemberId) {
-                      await requestNotificationPermission(currentMemberId);
+                    if (currentUserId) {
+                      await requestNotificationPermission(currentUserId);
                       setNotificationModal({
                         isOpen: true,
                         title: 'Notifications Enabled',

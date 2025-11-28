@@ -140,13 +140,15 @@ const App: React.FC = () => {
 
   // Request notification permission when user is logged in and members are loaded
   useEffect(() => {
-    if (isLoggedIn && currentUser && members.length > 0) {
+    if (isLoggedIn && currentUser) {
       const currentMember = members.find(m => m.name === currentUser);
       if (currentMember) {
         requestNotificationPermission(currentMember.id);
+      } else if (userRole === 'admin') {
+        requestNotificationPermission('admin_mazy');
       }
     }
-  }, [isLoggedIn, currentUser, members]);
+  }, [isLoggedIn, currentUser, members, userRole]);
 
   // Subscribe to chat messages for notifications
   useEffect(() => {
@@ -520,6 +522,7 @@ const App: React.FC = () => {
         {isChatOpen && (
           <GroupChat
             currentUser={currentUser}
+            currentUserId={currentMember?.id || ''}
             userRole={userRole}
             userProfilePicture={currentMember?.profilePicture}
             onClose={() => setIsChatOpen(false)}
@@ -766,9 +769,9 @@ const App: React.FC = () => {
         isChatOpen && (
           <GroupChat
             currentUser={currentUser}
+            currentUserId="admin_mazy"
             userRole={userRole}
             userProfilePicture={members.find(m => m.name === currentUser)?.profilePicture}
-            currentMemberId={members.find(m => m.name === currentUser)?.id}
             onClose={() => setIsChatOpen(false)}
           />
         )
@@ -797,7 +800,6 @@ const App: React.FC = () => {
                   balances={balances}
                   onAddMember={addMember}
                   onPayBalance={(member) => {
-                    // Close the member list overlay before opening payment modal
                     setShowMemberList(false);
                     setPayingMember(member);
                   }}
@@ -868,6 +870,7 @@ const App: React.FC = () => {
           </div>
         )
       }
+
       {/* Wishlist Modal */}
       {
         showWishlist && (

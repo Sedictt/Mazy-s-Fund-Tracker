@@ -1,6 +1,6 @@
 import { messaging, db } from '../firebase';
 import { getToken } from 'firebase/messaging';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 
 // Replace with your VAPID Key from Firebase Console -> Project Settings -> Cloud Messaging -> Web Configuration
 const VAPID_KEY = 'BPj_Zts-fmEnBOk8ebr-3ln5yKlvoI9qNoI7FPoZC4Jy7fQL8tS4zzorAp2Nln1IGWwI6rc1C0XSXG9S8vuahas';
@@ -24,10 +24,10 @@ export const requestNotificationPermission = async (memberId?: string) => {
 
         if (token) {
           console.log('FCM Token:', token);
-          // Save token to Firestore
-          await updateDoc(doc(db, 'members', memberId), {
+          // Save token to Firestore using setDoc with merge: true
+          await setDoc(doc(db, 'members', memberId), {
             fcmToken: token
-          });
+          }, { merge: true });
         } else {
           console.log('No registration token available. Request permission to generate one.');
         }
