@@ -182,6 +182,8 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, currentUserId, userR
             messages.map((msg) => {
               const isCurrentUser = msg.userName === currentUser;
               const isAdmin = msg.userRole === 'admin';
+              const displayName = msg.userName || 'Unknown';
+              const avatarInitial = displayName.charAt(0).toUpperCase();
 
               return (
                 <div
@@ -193,7 +195,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, currentUserId, userR
                     {msg.profilePicture ? (
                       <img
                         src={msg.profilePicture}
-                        alt={msg.userName}
+                        alt={displayName}
                         className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-violet-200"
                       />
                     ) : (
@@ -201,7 +203,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, currentUserId, userR
                         }`}>
                         <span className={`text-xs sm:text-sm font-bold ${isAdmin ? 'text-purple-700' : 'text-violet-700'
                           }`}>
-                          {msg.userName.charAt(0).toUpperCase()}
+                          {avatarInitial}
                         </span>
                       </div>
                     )}
@@ -210,7 +212,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, currentUserId, userR
                   {/* Message Content */}
                   <div className={`flex-1 max-w-[75%] sm:max-w-[70%] ${isCurrentUser ? 'text-right' : 'text-left'}`}>
                     <div className="flex items-center gap-1.5 sm:gap-2 mb-1" style={{ flexDirection: isCurrentUser ? 'row-reverse' : 'row' }}>
-                      <span className="text-xs sm:text-sm font-semibold text-gray-800 truncate">{msg.userName}</span>
+                      <span className="text-xs sm:text-sm font-semibold text-gray-800 truncate">{displayName}</span>
                       {isAdmin && (
                         <span className="px-1.5 py-0.5 sm:px-2 bg-purple-100 text-purple-700 text-[10px] sm:text-xs font-medium rounded-full flex-shrink-0">
                           Admin

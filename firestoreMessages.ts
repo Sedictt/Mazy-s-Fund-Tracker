@@ -52,9 +52,9 @@ export const subscribeToMessages = (
       messages.push({
         id: doc.id,
         userId: data.userId || '',
-        userName: data.userName,
-        userRole: data.userRole,
-        message: data.message,
+        userName: data.userName || 'Unknown User',
+        userRole: data.userRole || 'member',
+        message: data.message || '',
         timestamp: data.timestamp?.toDate() || new Date(),
         profilePicture: data.profilePicture,
       });
