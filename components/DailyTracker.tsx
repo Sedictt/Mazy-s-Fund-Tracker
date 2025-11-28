@@ -27,31 +27,31 @@ const DailyTracker: React.FC<DailyTrackerProps> = ({ members, contributions, onA
             return (
               <li key={member.id} className="p-5">
                 <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center space-x-4 min-w-0">
-                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-600 flex-shrink-0 overflow-hidden">
-                        {member.profilePicture ? (
-                          <img src={member.profilePicture} alt={member.name} className="w-full h-full object-cover" />
-                        ) : (
-                          member.name.charAt(0)
-                        )}
-                      </div>
-                      <p className="text-md font-medium text-gray-900 truncate">{member.name}</p>
+                  <div className="flex items-center space-x-4 min-w-0">
+                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-600 flex-shrink-0 overflow-hidden">
+                      {member.profilePicture ? (
+                        <img src={member.profilePicture} alt={member.name} className="w-full h-full object-cover" />
+                      ) : (
+                        (member.name || '?').charAt(0)
+                      )}
                     </div>
-                    {hasPaid ? (
-                      <div className="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-green-700 bg-green-100 rounded-full flex-shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        Paid
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => onAddContribution(member.id)}
-                        className="px-4 py-2 text-sm font-semibold text-white bg-violet-500 rounded-lg shadow-sm hover:bg-violet-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 transition-colors flex-shrink-0"
-                      >
-                        Mark as Paid<span className="hidden sm:inline"> (₱{contributionAmount})</span>
-                      </button>
-                    )}
+                    <p className="text-md font-medium text-gray-900 truncate">{member.name || 'Unknown Member'}</p>
+                  </div>
+                  {hasPaid ? (
+                    <div className="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-green-700 bg-green-100 rounded-full flex-shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Paid
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => onAddContribution(member.id)}
+                      className="px-4 py-2 text-sm font-semibold text-white bg-violet-500 rounded-lg shadow-sm hover:bg-violet-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 transition-colors flex-shrink-0"
+                    >
+                      Mark as Paid<span className="hidden sm:inline"> (₱{contributionAmount})</span>
+                    </button>
+                  )}
                 </div>
               </li>
             );
