@@ -12,30 +12,32 @@ interface PayBalanceModalProps {
 
 const PayBalanceModal: React.FC<PayBalanceModalProps> = ({ isOpen, onClose, member, balanceOwed, onRecordPayment }) => {
   const [amount, setAmount] = useState(balanceOwed.toString());
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (isOpen) {
       setAmount(balanceOwed > 0 ? balanceOwed.toString() : '');
+      setError('');
     }
   }, [isOpen, balanceOwed]);
 
   const handlePayment = () => {
     const paymentAmount = parseFloat(amount);
     if (isNaN(paymentAmount) || paymentAmount <= 0) {
-      alert('Please enter a valid positive amount.');
+      setError('Please enter a valid positive amount.');
       return;
     }
     if (paymentAmount > balanceOwed) {
-        if (!confirm(`This amount (₱${paymentAmount.toLocaleString()}) is more than what is owed. Are you sure you want to record this payment?`)) {
-            return;
-        }
+      if (!confirm(`This amount (₱${paymentAmount.toLocaleString()}) is more than what is owed. Are you sure you want to record this payment?`)) {
+        return;
+      }
     }
     onRecordPayment(member.id, paymentAmount);
   };
-  
+
   const paymentIcon = (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
     </svg>
   );
 
@@ -45,6 +47,11 @@ const PayBalanceModal: React.FC<PayBalanceModalProps> = ({ isOpen, onClose, memb
         <p className="text-sm text-gray-600">
           Current outstanding balance: <strong className="text-red-600">₱{balanceOwed.toLocaleString()}</strong>
         </p>
+        {error && (
+          <div className="p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+            {error}
+          </div>
+        )}
         <div>
           <label htmlFor="paymentAmount" className="block text-sm font-medium text-gray-700">Payment Amount</label>
           <div className="mt-1 relative rounded-md shadow-sm">

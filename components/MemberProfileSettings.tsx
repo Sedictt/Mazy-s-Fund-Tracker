@@ -8,7 +8,7 @@ interface MemberProfileSettingsProps {
   displayName: string;
   profilePicture?: string;
   onUpdateProfile: (displayName: string, profilePicture?: string) => void;
-  onUpdateCredentials: (newUsername: string, newPassword: string) => void;
+  onUpdateCredentials: (newUsername: string, newPassword: string) => Promise<void>;
   onClose: () => void;
 }
 
@@ -73,7 +73,7 @@ const MemberProfileSettings: React.FC<MemberProfileSettingsProps> = ({
     setTimeout(() => setSuccess(''), 3000);
   };
 
-  const handleSaveCredentials = () => {
+  const handleSaveCredentials = async () => {
     setError('');
 
     if (newUsername.trim() === '') {
@@ -92,12 +92,11 @@ const MemberProfileSettings: React.FC<MemberProfileSettingsProps> = ({
       }
     }
 
-    onUpdateCredentials(newUsername.trim(), newPassword || currentPassword);
-    setSuccess('Login credentials updated successfully!');
+    await onUpdateCredentials(newUsername.trim(), newPassword || currentPassword);
+    // Success handled by parent component via modal
     setNewPassword('');
     setConfirmPassword('');
     setCurrentPassword('');
-    setTimeout(() => setSuccess(''), 3000);
   };
 
   return (

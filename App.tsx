@@ -9,6 +9,7 @@ import ContributionLog from './components/ContributionLog';
 import PayBalanceModal from './components/PayBalanceModal';
 import EditContributionModal from './components/EditContributionModal';
 import ConfirmationModal from './components/common/ConfirmationModal';
+import MessageModal from './components/common/MessageModal';
 import DataTablePage from './components/DataTablePage';
 import LoginPage from './components/LoginPage';
 import MemberSummaryPage from './components/MemberSummaryPage';
@@ -48,6 +49,12 @@ const App: React.FC = () => {
   const [isDailyTrackerExpanded, setIsDailyTrackerExpanded] = useState(true);
   const [isDashboardExpanded, setIsDashboardExpanded] = useState(false);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [messageModal, setMessageModal] = useState<{ isOpen: boolean; title: string; message: string; type: 'success' | 'error' | 'info' }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info',
+  });
 
   const CONTRIBUTION_AMOUNT = 10;
 
@@ -88,9 +95,19 @@ const App: React.FC = () => {
     const success = await updateMemberCredentials(member.id, newUsername, newPassword);
 
     if (success) {
-      alert('Login credentials updated successfully! Please use your new credentials next time you log in.');
+      setMessageModal({
+        isOpen: true,
+        title: 'Success',
+        message: 'Login credentials updated successfully! Please use your new credentials next time you log in.',
+        type: 'success',
+      });
     } else {
-      alert('Failed to update credentials. Please try again.');
+      setMessageModal({
+        isOpen: true,
+        title: 'Error',
+        message: 'Failed to update credentials. Please try again.',
+        type: 'error',
+      });
     }
   };
 
@@ -204,7 +221,12 @@ const App: React.FC = () => {
 
   const addMember = (name: string) => {
     if (name.trim() === '' || members.some(m => m.name.toLowerCase() === name.trim().toLowerCase())) {
-      alert("Member name cannot be empty or a duplicate.");
+      setMessageModal({
+        isOpen: true,
+        title: 'Invalid Input',
+        message: "Member name cannot be empty or a duplicate.",
+        type: 'error',
+      });
       return;
     }
     const newMember: Member = {
@@ -276,7 +298,12 @@ const App: React.FC = () => {
 
   const recordBalancePayment = (memberId: string, amount: number) => {
     if (amount <= 0) {
-      alert("Payment amount must be positive.");
+      setMessageModal({
+        isOpen: true,
+        title: 'Invalid Amount',
+        message: "Payment amount must be positive.",
+        type: 'error',
+      });
       return;
     }
     const newContribution: Contribution = {
@@ -356,7 +383,12 @@ const App: React.FC = () => {
     const linesToProcess = lines.filter(line => line.split(',').length === 3 && line.trim() !== '');
 
     if (linesToProcess.length === 0 && lines.length > 0) {
-      alert("Invalid data format. Please use 'Date,Member Name,Amount'.");
+      setMessageModal({
+        isOpen: true,
+        title: 'Invalid Data',
+        message: "Invalid data format. Please use 'Date,Member Name,Amount'.",
+        type: 'error',
+      });
       return;
     }
 
@@ -434,7 +466,12 @@ const App: React.FC = () => {
       alertMessage += `\n(${invalidLines} line(s) with invalid data were skipped.)`;
     }
 
-    alert(alertMessage);
+    setMessageModal({
+      isOpen: true,
+      title: 'Import Result',
+      message: alertMessage,
+      type: invalidLines > 0 ? 'info' : 'success',
+    });
   };
 
   const handleAddWishlistItem = (itemName: string, price: number) => {
@@ -775,6 +812,14 @@ const App: React.FC = () => {
           />
         )
       }
+
+      <MessageModal
+        isOpen={messageModal.isOpen}
+        onClose={() => setMessageModal({ ...messageModal, isOpen: false })}
+        title={messageModal.title}
+        message={messageModal.message}
+        type={messageModal.type}
+      />
 
       {/* Group Chat */}
       {

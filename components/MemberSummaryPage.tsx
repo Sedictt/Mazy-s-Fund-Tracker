@@ -11,7 +11,7 @@ interface MemberSummaryPageProps {
   currentUsername: string;
   onLogout: () => void;
   onUpdateProfile: (displayName: string, profilePicture?: string) => void;
-  onUpdateCredentials: (newUsername: string, newPassword: string) => void;
+  onUpdateCredentials: (newUsername: string, newPassword: string) => Promise<void>;
   onOpenChat: () => void;
   unreadCount?: number;
   wishlistItems: WishlistItem[];
