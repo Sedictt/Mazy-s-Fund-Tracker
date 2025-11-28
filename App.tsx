@@ -1,9 +1,3 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Member, Contribution, WishlistItem } from './types';
-import Header from './components/Header';
-import Dashboard from './components/Dashboard';
-import DailyTracker from './components/DailyTracker';
-import MemberList from './components/MemberList';
 import MembersPage from './components/MembersPage';
 import ContributionLog from './components/ContributionLog';
 import PayBalanceModal from './components/PayBalanceModal';
