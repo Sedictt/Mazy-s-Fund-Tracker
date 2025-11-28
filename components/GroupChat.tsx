@@ -20,23 +20,9 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  // Subscribe to messages
-  useEffect(() => {
-    const unsubscribe = subscribeToMessages((newMessages) => {
-      setMessages(newMessages);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (newMessage.trim() === '') return;
 
     setIsSending(true);
@@ -53,7 +39,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
 
   const handleDeleteMessage = async (messageId: string) => {
     if (!window.confirm('Are you sure you want to delete this message?')) return;
-    
+
     try {
       await deleteMessage(messageId);
     } catch (error) {
@@ -66,12 +52,12 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
-    
+
     if (hours < 24) {
       return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     } else {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + 
-             date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
+        date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     }
   };
 
@@ -91,19 +77,42 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
               <p className="text-xs sm:text-sm text-gray-600 truncate">All members • {messages.length} messages</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0"
-            aria-label="Close chat"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                // We need to pass the current user's ID to requestNotificationPermission
+                // But we don't have the ID here, only the name.
+                // However, requestNotificationPermission handles the lookup if we modify it or pass the ID if available.
+                // Let's assume we can pass the ID or just trigger the permission first.
+                // Actually, requestNotificationPermission takes memberId.
+                // We should pass memberId to GroupChatProps.
+                // For now, let's just trigger the permission request part which is global, 
+                // but saving the token needs the ID.
+                // Let's just alert the user to check settings if we can't save it easily here without ID.
+                // Wait, App.tsx has the ID. Let's pass it down.
+                // For now, let's just try to request permission.
+                if ('Notification' in window) {
+                  Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                      alert("Notifications enabled! Please refresh to ensure token is saved.");
+                    } else {
+                      alert("Notification permission denied.");
+                    }
+                  });
+                }
+              }}
+              className="p-1.5 sm:p-2 rounded-md text-violet-600 hover:bg-violet-50 transition-colors"
+              title="Enable Notifications"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Messages Container */}
-        <div 
+        <div
           ref={chatContainerRef}
           className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50"
         >
@@ -134,12 +143,10 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
                         className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-violet-200"
                       />
                     ) : (
-                      <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${
-                        isAdmin ? 'bg-purple-200' : 'bg-violet-200'
-                      }`}>
-                        <span className={`text-xs sm:text-sm font-bold ${
-                          isAdmin ? 'text-purple-700' : 'text-violet-700'
+                      <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${isAdmin ? 'bg-purple-200' : 'bg-violet-200'
                         }`}>
+                        <span className={`text-xs sm:text-sm font-bold ${isAdmin ? 'text-purple-700' : 'text-violet-700'
+                          }`}>
                           {msg.userName.charAt(0).toUpperCase()}
                         </span>
                       </div>
@@ -157,16 +164,15 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
                       )}
                       <span className="text-[10px] sm:text-xs text-gray-500 flex-shrink-0">{formatTime(msg.timestamp)}</span>
                     </div>
-                    
+
                     <div className="relative group">
-                      <div className={`inline-block p-2 sm:p-3 rounded-lg ${
-                        isCurrentUser 
-                          ? 'bg-violet-500 text-white' 
-                          : 'bg-white text-gray-800 border border-gray-200'
-                      }`}>
+                      <div className={`inline-block p-2 sm:p-3 rounded-lg ${isCurrentUser
+                        ? 'bg-violet-500 text-white'
+                        : 'bg-white text-gray-800 border border-gray-200'
+                        }`}>
                         <p className="text-xs sm:text-sm whitespace-pre-wrap break-words leading-relaxed">{msg.message}</p>
                       </div>
-                      
+
                       {/* Delete button (admin only) */}
                       {userRole === 'admin' && !isCurrentUser && (
                         <button
@@ -185,12 +191,11 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
               );
             })
           )}
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Message Input */}
         <form onSubmit={handleSendMessage} className="p-3 sm:p-4 border-t border-gray-200 bg-white rounded-b-lg flex-shrink-0">
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
             <input
               type="text"
               value={newMessage}

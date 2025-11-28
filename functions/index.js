@@ -57,12 +57,13 @@ exports.sendChatNotification = onDocumentCreated(
       membersSnapshot.forEach((doc) => {
         const member = doc.data();
         if (member.fcmToken) {
-          if (member.name !== senderName) {
-            tokens.push(member.fcmToken);
-            console.log(`Added token for member: ${member.name}`);
-          } else {
-            console.log(`Skipping sender's token: ${member.name}`);
-          }
+          // For debugging: Allow sending to self
+          // if (member.name !== senderName) {
+          tokens.push(member.fcmToken);
+          console.log(`Added token for member: ${member.name}`);
+          // } else {
+          //   console.log(`Skipping sender's token: ${member.name}`);
+          // }
         } else {
           console.log(`No token for member: ${member.name}`);
         }
