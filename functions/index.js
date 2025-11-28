@@ -74,21 +74,20 @@ exports.sendChatNotification = onDocumentCreated(
         return;
       }
 
-      const payload = {
+      const message = {
+        tokens: tokens,
         notification: {
           title: `New message from ${senderName}`,
           body: messageText,
-          icon: "/logo.png",
+        },
+        webpush: {
+          notification: {
+            icon: "/logo.png",
+          },
         },
         data: {
           click_action: "https://your-app-url.com",
         },
-      };
-
-      const message = {
-        tokens: tokens,
-        notification: payload.notification,
-        data: payload.data,
       };
 
       try {
