@@ -85,15 +85,23 @@ exports.sendChatNotification = onDocumentCreated(
         },
       };
 
-      const message = {
-        tokens: tokens,
-        notification: payload.notification,
-        data: payload.data,
-      };
-
       try {
-        const response = await admin.messaging().sendEachForMulticast(message);
-        console.log("Notifications sent:", response);
+        const response = await admin.messaging().sendToDevice(tokens, payload);
+
+        response.results.forEach((result, index) => {
+          const error = result.error;
+          if (error) {
+            console.error(
+                `Failure sending notification to token ${tokens[index]}:`,
+                error,
+            );
+          }
+        });
+
+        console.log("Notifications sent summary:", {
+          successCount: response.successCount,
+          failureCount: response.failureCount,
+        });
       } catch (error) {
         console.error("Error sending notifications:", error);
       }

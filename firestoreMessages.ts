@@ -44,7 +44,7 @@ export const subscribeToMessages = (
   callback: (messages: ChatMessage[]) => void
 ): (() => void) => {
   const q = query(messagesCollection, orderBy('timestamp', 'asc'));
-  
+
   const unsubscribe = onSnapshot(q, (snapshot) => {
     const messages: ChatMessage[] = [];
     snapshot.forEach((doc) => {
@@ -60,6 +60,8 @@ export const subscribeToMessages = (
       });
     });
     callback(messages);
+  }, (error) => {
+    console.error("Error fetching messages:", error);
   });
 
   return unsubscribe;
