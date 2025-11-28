@@ -74,19 +74,39 @@ exports.sendChatNotification = onDocumentCreated(
         return;
       }
 
+      // Prepare notification payload with visual enhancements
+      const senderProfilePic = messageData.profilePicture;
+
       const message = {
         tokens: tokens,
         notification: {
-          title: `New message from ${senderName}`,
+          title: `💬 ${senderName}`,
           body: messageText,
         },
         webpush: {
           notification: {
-            icon: "/logo.png",
-            badge: "/logo.png",
+            icon: "/logo.png", // App icon (always use static for reliability)
+            badge: "/logo.png", // Small badge icon
+            // Large image in notification (only if profile pic exists and is accessible)
+            ...(senderProfilePic && {image: senderProfilePic}),
+            requireInteraction: false, // Auto-dismiss after a few seconds
+            tag: "chat-message", // Group notifications by tag
+            renotify: true, // Alert even if previous notification exists
+            // Action buttons (only supported on some browsers)
+            actions: [
+              {
+                action: "view",
+                title: "View Chat",
+                icon: "/logo.png",
+              },
+              {
+                action: "dismiss",
+                title: "Dismiss",
+              },
+            ],
           },
           fcmOptions: {
-            link: "https://aetheria-4a391.web.app",
+            link: "https://aetheria-4a391.web.app", // Click opens this URL
           },
         },
       };
