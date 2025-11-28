@@ -18,7 +18,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     setError('');
     setIsLoading(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       // Check admin login
       if (isAdminCredentials(username, password)) {
         if (stayLoggedIn) {
@@ -31,15 +31,19 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       }
 
       // Check member login
-      const memberDisplayName = validateMemberCredentials(username, password);
-      if (memberDisplayName) {
-        if (stayLoggedIn) {
-          localStorage.setItem('fundTracker_user', memberDisplayName);
-          localStorage.setItem('fundTracker_role', 'member');
+      try {
+        const member = await validateMemberCredentials(username, password);
+        if (member) {
+          if (stayLoggedIn) {
+            localStorage.setItem('fundTracker_user', member.name);
+            localStorage.setItem('fundTracker_role', 'member');
+          }
+          onLogin(member.name, 'member');
+          setIsLoading(false);
+          return;
         }
-        onLogin(memberDisplayName, 'member');
-        setIsLoading(false);
-        return;
+      } catch (err) {
+        console.error("Login error:", err);
       }
 
       // Invalid credentials

@@ -16,7 +16,7 @@ import GroupChat from './components/GroupChat';
 import { getTodayDateString, countContributionDays } from './utils/date';
 import { saveContributionToFirestore, deleteContributionFromFirestore, saveMultipleContributionsToFirestore, loadContributionsFromFirestore } from './firestoreContributions';
 import { loadMembersFromFirestore, saveMultipleMembersToFirestore, deleteMemberFromFirestore } from './firestoreMembers';
-import { updateMemberCredentials } from './memberCredentials';
+import { updateMemberCredentials, migrateLegacyCredentials } from './memberCredentials';
 import { requestNotificationPermission, showContributionNotification, playNotificationSound } from './utils/notifications';
 import { subscribeToMessages, ChatMessage } from './firestoreMessages';
 import { saveWishlistItemToFirestore, deleteWishlistItemFromFirestore, loadWishlistItemsFromFirestore } from './firestoreWishlist';
@@ -77,15 +77,15 @@ const App: React.FC = () => {
       const oldDisplayName = memberToUpdate.name;
       updateMember(memberToUpdate.id, displayName, profilePicture);
       setCurrentUser(displayName); // Update current user to new display name
-
-      // Update credentials with new display name
-      updateMemberCredentials(oldDisplayName, undefined, undefined, displayName);
     }
   };
 
-  const handleMemberUpdateCredentials = (newUsername: string, newPassword: string) => {
+  const handleMemberUpdateCredentials = async (newUsername: string, newPassword: string) => {
+    const member = members.find(m => m.name === currentUser);
+    if (!member) return;
+
     // Update credentials using the update function
-    const success = updateMemberCredentials(currentUser, newUsername, newPassword, undefined);
+    const success = await updateMemberCredentials(member.id, newUsername, newPassword);
 
     if (success) {
       alert('Login credentials updated successfully! Please use your new credentials next time you log in.');
@@ -123,6 +123,10 @@ const App: React.FC = () => {
       .then(fetched => {
         if (fetched.length > 0) {
           setMembers(fetched);
+          // Migrate legacy credentials if needed
+          migrateLegacyCredentials(fetched).then(() => {
+            console.log('Credential migration check complete');
+          });
         }
       })
       .catch(error => {
@@ -207,6 +211,10 @@ const App: React.FC = () => {
       id: new Date().getTime().toString(),
       name: name.trim(),
       joinDate: fundStartDate,
+      totalContributions: 0,
+      balance: 0,
+      username: name.trim().toLowerCase().replace(/\s+/g, ''),
+      password: name.trim().toLowerCase().replace(/\s+/g, '') + '123',
     };
     setMembers([...members, newMember]);
     saveMultipleMembersToFirestore([newMember]).catch(error => {
@@ -375,6 +383,10 @@ const App: React.FC = () => {
           id: `${new Date().getTime()}-${name}`,
           name: name,
           joinDate: new Date(date).toISOString(), // Set join date to first contribution
+          totalContributions: 0,
+          balance: 0,
+          username: name.trim().toLowerCase().replace(/\s+/g, ''),
+          password: name.trim().toLowerCase().replace(/\s+/g, '') + '123',
         };
         updatedMembers.push(member);
         memberNameMap.set(name.toLowerCase(), member);

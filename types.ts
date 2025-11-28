@@ -7,6 +7,8 @@ export interface Member {
   fcmToken?: string; // Firebase Cloud Messaging token
   totalContributions: number;
   balance: number;
+  username?: string;
+  password?: string;
 }
 
 export interface Contribution {
