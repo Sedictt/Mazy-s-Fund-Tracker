@@ -85,8 +85,14 @@ exports.sendChatNotification = onDocumentCreated(
         },
       };
 
+      const message = {
+        tokens: tokens,
+        notification: payload.notification,
+        data: payload.data,
+      };
+
       try {
-        const response = await admin.messaging().sendToDevice(tokens, payload);
+        const response = await admin.messaging().sendEachForMulticast(message);
 
         response.results.forEach((result, index) => {
           const error = result.error;
