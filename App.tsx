@@ -21,6 +21,7 @@ import { requestNotificationPermission, showContributionNotification, playNotifi
 import { subscribeToMessages, ChatMessage } from './firestoreMessages';
 import { saveWishlistItemToFirestore, deleteWishlistItemFromFirestore, loadWishlistItemsFromFirestore } from './firestoreWishlist';
 import Wishlist from './components/Wishlist';
+import AnnouncementsModal from './components/AnnouncementsModal';
 
 type Page = 'dashboard' | 'dataTable' | 'members';
 type UserRole = 'admin' | 'member';
@@ -43,6 +44,7 @@ const App: React.FC = () => {
   const [showContributionLog, setShowContributionLog] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
+  const [showAnnouncements, setShowAnnouncements] = useState(true);
   const [isDailyTrackerExpanded, setIsDailyTrackerExpanded] = useState(true);
   const [isDashboardExpanded, setIsDashboardExpanded] = useState(false);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
@@ -766,6 +768,7 @@ const App: React.FC = () => {
             currentUser={currentUser}
             userRole={userRole}
             userProfilePicture={members.find(m => m.name === currentUser)?.profilePicture}
+            currentMemberId={members.find(m => m.name === currentUser)?.id}
             onClose={() => setIsChatOpen(false)}
           />
         )
@@ -895,6 +898,12 @@ const App: React.FC = () => {
           </div>
         )
       }
+
+      {/* Announcements Modal */}
+      <AnnouncementsModal
+        isOpen={showAnnouncements}
+        onClose={() => setShowAnnouncements(false)}
+      />
     </div >
   );
 };

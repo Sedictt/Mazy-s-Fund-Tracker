@@ -1,20 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Card from './common/Card';
 import { ChatMessage, sendMessage, subscribeToMessages, deleteMessage } from '../firestoreMessages';
+import { requestNotificationPermission } from '../utils/notifications';
+import Modal from './common/Modal';
 
 interface GroupChatProps {
   currentUser: string;
   userRole: 'admin' | 'member';
   userProfilePicture?: string;
+  currentMemberId?: string;
   onClose: () => void;
 }
 
-const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfilePicture, onClose }) => {
+const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfilePicture, currentMemberId, onClose }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [notificationModal, setNotificationModal] = useState<{ isOpen: boolean; title: string; message: string; type: 'success' | 'error' }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'success'
+  });
 
   // Subscribe to messages
   useEffect(() => {
@@ -93,26 +102,48 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
-                // We need to pass the current user's ID to requestNotificationPermission
-                // But we don't have the ID here, only the name.
-                // However, requestNotificationPermission handles the lookup if we modify it or pass the ID if available.
-                // Let's assume we can pass the ID or just trigger the permission first.
-                // Actually, requestNotificationPermission takes memberId.
-                // We should pass memberId to GroupChatProps.
-                // For now, let's just trigger the permission request part which is global, 
-                // but saving the token needs the ID.
-                // Let's just alert the user to check settings if we can't save it easily here without ID.
-                // Wait, App.tsx has the ID. Let's pass it down.
-                // For now, let's just try to request permission.
-                if ('Notification' in window) {
-                  Notification.requestPermission().then(permission => {
-                    if (permission === 'granted') {
-                      alert("Notifications enabled! Please refresh to ensure token is saved.");
+                const handlePermission = async () => {
+                  try {
+                    if (currentMemberId) {
+                      await requestNotificationPermission(currentMemberId);
+                      setNotificationModal({
+                        isOpen: true,
+                        title: 'Notifications Enabled',
+                        message: "You're all set! You'll now receive updates on this device.",
+                        type: 'success'
+                      });
                     } else {
-                      alert("Notification permission denied.");
+                      // Fallback
+                      if ('Notification' in window) {
+                        const permission = await Notification.requestPermission();
+                        if (permission === 'granted') {
+                          setNotificationModal({
+                            isOpen: true,
+                            title: 'Notifications Enabled',
+                            message: "You're all set! You'll now receive updates on this device.",
+                            type: 'success'
+                          });
+                        } else {
+                          setNotificationModal({
+                            isOpen: true,
+                            title: 'Notifications Blocked',
+                            message: "We couldn't turn on notifications. Please check your browser settings to allow them.",
+                            type: 'error'
+                          });
+                        }
+                      }
                     }
-                  });
-                }
+                  } catch (error) {
+                    console.error("Error requesting permission:", error);
+                    setNotificationModal({
+                      isOpen: true,
+                      title: 'Something went wrong',
+                      message: "We couldn't turn on notifications right now. Please try again later.",
+                      type: 'error'
+                    });
+                  }
+                };
+                handlePermission();
               }}
               className="p-1.5 sm:p-2 rounded-md text-violet-600 hover:bg-violet-50 transition-colors"
               title="Enable Notifications"
@@ -249,6 +280,35 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
           </div>
         </form>
       </Card>
+
+      {/* Notification Feedback Modal */}
+      <Modal
+        isOpen={notificationModal.isOpen}
+        onClose={() => setNotificationModal({ ...notificationModal, isOpen: false })}
+        title={notificationModal.title}
+        zIndex="z-[60]"
+        icon={
+          notificationModal.type === 'success' ? (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          )
+        }
+      >
+        <p className="text-sm text-gray-500">{notificationModal.message}</p>
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={() => setNotificationModal({ ...notificationModal, isOpen: false })}
+            className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-violet-600 border border-transparent rounded-md hover:bg-violet-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-violet-500"
+          >
+            Got it
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };
