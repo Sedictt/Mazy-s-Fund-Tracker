@@ -74,6 +74,8 @@ exports.sendChatNotification = onDocumentCreated(
         return;
       }
 
+      const senderProfilePic = messageData.profilePicture || "/logo.png";
+
       const message = {
         tokens: tokens,
         notification: {
@@ -82,7 +84,12 @@ exports.sendChatNotification = onDocumentCreated(
         },
         webpush: {
           notification: {
-            icon: "/logo.png",
+            icon: senderProfilePic,
+            badge: "/logo.png",
+            vibrate: [200, 100, 200],
+          },
+          fcmOptions: {
+            link: "https://your-app-url.com",
           },
         },
         data: {
