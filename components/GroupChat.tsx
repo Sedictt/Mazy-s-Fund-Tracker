@@ -16,6 +16,19 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
+  // Subscribe to messages
+  useEffect(() => {
+    const unsubscribe = subscribeToMessages((newMessages) => {
+      setMessages(newMessages);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   // Auto-scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -200,6 +213,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ currentUser, userRole, userProfil
               );
             })
           )}
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Message Input */}

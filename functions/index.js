@@ -94,7 +94,7 @@ exports.sendChatNotification = onDocumentCreated(
       try {
         const response = await admin.messaging().sendEachForMulticast(message);
 
-        response.results.forEach((result, index) => {
+        response.responses.forEach((result, index) => {
           const error = result.error;
           if (error) {
             console.error(
