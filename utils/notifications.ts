@@ -16,8 +16,8 @@ export const requestNotificationPermission = async (memberId?: string) => {
     if (permission === 'granted') {
       console.log('Notification permission granted.');
 
-      if (memberId) {
-        // Get FCM Token
+      if (memberId && messaging) {
+        // Get FCM Token only if messaging is available
         const token = await getToken(messaging, {
           vapidKey: VAPID_KEY
         });
@@ -31,6 +31,8 @@ export const requestNotificationPermission = async (memberId?: string) => {
         } else {
           console.log('No registration token available. Request permission to generate one.');
         }
+      } else if (memberId && !messaging) {
+        console.warn('Firebase Messaging is not available. Push notifications will not work.');
       }
     } else {
       console.log('Unable to get permission to notify.');

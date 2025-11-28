@@ -28,7 +28,18 @@ try {
 
 const db = getFirestore(app);
 const storage = getStorage(app);
-const messaging = getMessaging(app);
+
+// Initialize messaging conditionally with error handling
+let messaging;
+try {
+  if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    messaging = getMessaging(app);
+  } else {
+    console.warn('Service workers are not supported in this browser. Push notifications will be disabled.');
+  }
+} catch (error) {
+  console.warn('Firebase Messaging could not be initialized:', error);
+}
 
 console.log('Firebase initialized');
 
