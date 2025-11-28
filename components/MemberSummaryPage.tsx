@@ -176,7 +176,7 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
                 ) : (
                   <div className="w-24 h-24 rounded-full bg-violet-300 flex items-center justify-center border-4 border-violet-400 shadow-lg">
                     <span className="text-3xl font-bold text-white">
-                      {currentMember.name.charAt(0).toUpperCase()}
+                      {(currentMember.name || '?').charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
@@ -227,7 +227,7 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
                           ) : (
                             <div className="w-8 h-8 rounded-full bg-violet-200 flex items-center justify-center flex-shrink-0">
                               <span className="text-sm font-bold text-violet-700">
-                                {member.name.charAt(0).toUpperCase()}
+                                {(member.name || '?').charAt(0).toUpperCase()}
                               </span>
                             </div>
                           )}
