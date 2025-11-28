@@ -46,16 +46,25 @@ exports.sendChatNotification = onDocumentCreated(
       const senderName = messageData.userName;
       const messageText = messageData.message;
 
-      // Get all members with an FCM token, excluding the sender
+      // Get all members with an FCM token
       const membersSnapshot = await admin.firestore()
           .collection("members")
           .get();
 
+      console.log(`Found ${membersSnapshot.size} members total.`);
+
       const tokens = [];
       membersSnapshot.forEach((doc) => {
         const member = doc.data();
-        if (member.fcmToken && member.name !== senderName) {
-          tokens.push(member.fcmToken);
+        if (member.fcmToken) {
+          if (member.name !== senderName) {
+            tokens.push(member.fcmToken);
+            console.log(`Added token for member: ${member.name}`);
+          } else {
+            console.log(`Skipping sender's token: ${member.name}`);
+          }
+        } else {
+          console.log(`No token for member: ${member.name}`);
         }
       });
 

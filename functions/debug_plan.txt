@@ -1,0 +1,10 @@
+const admin = require("firebase-admin");
+var serviceAccount = require("./serviceAccountKey.json"); // We don't have this, so we rely on default creds if running locally with `firebase functions:shell` or similar, but actually we can just use the existing index.js context or a separate script if we had creds. 
+// Better approach: modify index.js temporarily to log all members on a trigger, or just trust the logs.
+
+// The logs already said "No tokens to send to".
+// This means either:
+// 1. No members have tokens.
+// 2. Only the sender has a token.
+
+// Let's create a temporary test function in index.js that we can call via HTTP to debug the tokens.
