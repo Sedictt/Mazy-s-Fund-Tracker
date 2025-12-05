@@ -132,3 +132,24 @@ export const getMemberBadges = (member: Member, contributions: Contribution[]): 
 
     return badges;
 };
+
+export interface PetStage {
+    name: string;
+    icon: string;
+    image: string;
+    minStreak: number;
+    description: string;
+}
+
+export const PET_STAGES: PetStage[] = [
+    { name: 'Mystery Egg', icon: '🥚', image: '/pet_egg.png', minStreak: 0, description: 'A mysterious egg. Keep your streak to hatch it!' },
+    { name: 'Baby Dragon', icon: '🦎', image: '/pet_baby_dragon.png', minStreak: 3, description: 'It hatched! A cute baby dragon.' },
+    { name: 'Young Dragon', icon: '🐉', image: '/pet_young_dragon.png', minStreak: 7, description: 'Growing strong and learning to fly.' },
+    { name: 'Fire Dragon', icon: '🔥🐉', image: '/pet_fire_dragon.png', minStreak: 14, description: 'A powerful dragon with a fiery spirit.' },
+    { name: 'Ancient Dragon', icon: '👑🐉', image: '/pet_ancient_dragon.png', minStreak: 30, description: 'A legendary dragon, master of consistency.' },
+];
+
+export const getPetStage = (streak: number): PetStage => {
+    // Find the highest stage that meets the streak requirement
+    return PET_STAGES.slice().reverse().find(stage => streak >= stage.minStreak) || PET_STAGES[0];
+};

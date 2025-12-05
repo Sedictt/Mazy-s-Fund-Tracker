@@ -5,6 +5,7 @@ import MemberProfileSettings from './MemberProfileSettings';
 import Wishlist from './Wishlist';
 import AnnouncementsModal from './AnnouncementsModal';
 import { getMemberBadges, calculateStreak } from '../utils/gamification';
+import StreakPet from './StreakPet';
 
 
 interface MemberSummaryPageProps {
@@ -49,9 +50,9 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
   const averageContribution = totalMembers > 0 ? totalContributions / totalMembers : 0;
 
   React.useEffect(() => {
-    const campaignEndDate = new Date('2025-12-05').getTime(); // 7 days from Nov 27
+    const campaignEndDate = new Date('2025-12-12').getTime(); // 7 days from Dec 5
     const now = Date.now();
-    const hasSeenAnnouncement = localStorage.getItem(`hasSeenWishlistAnnouncement_${currentUsername}`);
+    const hasSeenAnnouncement = localStorage.getItem(`hasSeenStreakPetAnnouncement_${currentUsername}`);
 
     if (now < campaignEndDate && !hasSeenAnnouncement) {
       setIsAnnouncementsOpen(true);
@@ -60,7 +61,7 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
 
   const handleCloseAnnouncements = () => {
     setIsAnnouncementsOpen(false);
-    localStorage.setItem(`hasSeenWishlistAnnouncement_${currentUsername}`, 'true');
+    localStorage.setItem(`hasSeenStreakPetAnnouncement_${currentUsername}`, 'true');
   };
 
   return (
@@ -192,8 +193,8 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
                       return (
                         <span
                           className={`flex items-center text-sm font-bold px-2 py-0.5 rounded-full ${streak > 0
-                              ? 'text-orange-600 bg-orange-100'
-                              : 'text-gray-400 bg-gray-100 grayscale'
+                            ? 'text-orange-600 bg-orange-100'
+                            : 'text-gray-400 bg-gray-100 grayscale'
                             }`}
                           title={`${streak} Day Streak`}
                         >
@@ -227,6 +228,11 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
                     <span>🔥</span>
                     <span>{calculateStreak(currentMember.id, contributions)} Day Streak</span>
                   </div>
+                </div>
+
+                {/* Streak Pet */}
+                <div className="mb-6">
+                  <StreakPet streak={calculateStreak(currentMember.id, contributions)} />
                 </div>
 
                 <div className="flex flex-wrap gap-3">

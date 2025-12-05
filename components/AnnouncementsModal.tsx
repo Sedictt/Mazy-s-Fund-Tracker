@@ -10,19 +10,27 @@ const AnnouncementsModal: React.FC<AnnouncementsModalProps> = ({ isOpen, onClose
   const announcements = [
     {
       id: 1,
-      date: 'November 27, 2025',
-      title: 'Wishlist Feature is here',
-      description: 'Personalize your group expenses and grab attention. Add items to a shared wishlist, track estimated costs, and collaborate on future purchases.',
-      icon: '🎁',
-      color: 'bg-[#8B5CF6]'
+      date: 'December 5, 2025',
+      title: '🐉 Meet Your Streak Pet!',
+      description: 'Introducing your new companion! Maintain your contribution streak to grow and evolve your dragon pet. Start with a Mystery Egg and watch it transform into an Ancient Dragon as you stay consistent!',
+      icon: '🥚',
+      color: 'bg-gradient-to-br from-amber-400 to-orange-500'
     },
     {
       id: 2,
-      date: 'November 28, 2025',
-      title: 'Never Miss a Beat 🔔',
-      description: 'Stay in the loop! Enable push notifications by clicking the bell icon 🔔 in the chatbox to get real-time alerts for new messages, even when you\'re away.',
-      icon: '🔔',
-      color: 'bg-blue-500'
+      date: 'December 5, 2025',
+      title: '🔥 Streaks & Badges',
+      description: 'Your consistency now gets rewarded! Track your contribution streaks and earn badges like "On Fire" and "Super Streak". See your streak count displayed next to your name across the app.',
+      icon: '🏆',
+      color: 'bg-gradient-to-br from-orange-400 to-red-500'
+    },
+    {
+      id: 3,
+      date: 'December 5, 2025',
+      title: '🔑 Admin Password Reset',
+      description: 'Admins can now reset member passwords directly from the Member List. Look for the key icon next to each member to help teammates who forgot their login credentials.',
+      icon: '🔐',
+      color: 'bg-gradient-to-br from-blue-400 to-indigo-500'
     }
   ];
 
