@@ -16,7 +16,7 @@ import MemberSummaryPage from './components/MemberSummaryPage';
 import GroupChat from './components/GroupChat';
 import { getTodayDateString, countContributionDays, calculateExpectedTotal, getCurrentContributionAmount } from './utils/date';
 import { saveContributionToFirestore, deleteContributionFromFirestore, saveMultipleContributionsToFirestore, loadContributionsFromFirestore } from './firestoreContributions';
-import { loadMembersFromFirestore, saveMultipleMembersToFirestore, deleteMemberFromFirestore } from './firestoreMembers';
+import { loadMembersFromFirestore, saveMultipleMembersToFirestore, deleteMemberFromFirestore, saveMemberToFirestore } from './firestoreMembers';
 import { updateMemberCredentials, migrateLegacyCredentials } from './memberCredentials';
 import { requestNotificationPermission, showContributionNotification, playNotificationSound } from './utils/notifications';
 import { subscribeToMessages, ChatMessage } from './firestoreMessages';
@@ -491,6 +491,28 @@ const App: React.FC = () => {
     });
   };
 
+  const handleResetPassword = async (member: Member, newPassword: string) => {
+    try {
+      const updatedMember = { ...member, password: newPassword };
+      setMembers(members.map(m => m.id === member.id ? updatedMember : m));
+      await saveMemberToFirestore(updatedMember);
+      setMessageModal({
+        isOpen: true,
+        title: 'Success',
+        message: `Password for ${member.name} has been reset successfully.`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Failed to reset password', error);
+      setMessageModal({
+        isOpen: true,
+        title: 'Error',
+        message: 'Failed to reset password. Please try again.',
+        type: 'error',
+      });
+    }
+  };
+
   const handleAddWishlistItem = (itemName: string, price: number) => {
     const currentMember = members.find(m => m.name === currentUser);
     if (!currentMember) return;
@@ -880,6 +902,7 @@ const App: React.FC = () => {
                     setPayingMember(member);
                   }}
                   onDeleteMember={handleDeleteMember}
+                  onResetPassword={handleResetPassword}
                 />
               </div>
             </div>

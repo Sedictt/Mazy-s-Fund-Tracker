@@ -12,6 +12,7 @@ interface MemberListProps {
   onAddMember: (name: string) => void;
   onPayBalance: (member: Member) => void;
   onDeleteMember: (member: Member) => void;
+  onResetPassword: (member: Member, newPassword: string) => Promise<void>;
 }
 
 const BalanceStatus: React.FC<{ balance: number }> = ({ balance }) => {
@@ -33,9 +34,11 @@ const BalanceStatus: React.FC<{ balance: number }> = ({ balance }) => {
 };
 
 
-const MemberList: React.FC<MemberListProps> = ({ members, contributions, memberTotals, balances, onAddMember, onPayBalance, onDeleteMember }) => {
+const MemberList: React.FC<MemberListProps> = ({ members, contributions, memberTotals, balances, onAddMember, onPayBalance, onDeleteMember, onResetPassword }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newMemberName, setNewMemberName] = useState('');
+  const [resetPasswordMember, setResetPasswordMember] = useState<Member | null>(null);
+  const [newPassword, setNewPassword] = useState('');
 
   const handleAddMember = () => {
     onAddMember(newMemberName);
@@ -73,8 +76,8 @@ const MemberList: React.FC<MemberListProps> = ({ members, contributions, memberT
                           return (
                             <span
                               className={`flex items-center text-xs font-bold px-1.5 py-0.5 rounded-full ${streak > 0
-                                  ? 'text-orange-600 bg-orange-100'
-                                  : 'text-gray-400 bg-gray-100 grayscale'
+                                ? 'text-orange-600 bg-orange-100'
+                                : 'text-gray-400 bg-gray-100 grayscale'
                                 }`}
                               title={`${streak} Day Streak`}
                             >
@@ -99,6 +102,16 @@ const MemberList: React.FC<MemberListProps> = ({ members, contributions, memberT
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => setResetPasswordMember(member)}
+                      className="p-1.5 rounded-full text-gray-400 hover:bg-blue-100 hover:text-blue-600 transition-colors ml-1"
+                      aria-label={`Reset Password for ${member.name}`}
+                      title="Reset Password"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11.536 19.464a2.414 2.414 0 01-1.707.707H8.414a1 1 0 01-.707-.293l-1.414-1.414a1 1 0 01-.293-.707V16.414a2.414 2.414 0 01.707-1.707l1.414-1.414a1 1 0 00.293-.707V11.586a1 1 0 01.293-.707L13 8.586A6 6 0 0115 7z" />
                       </svg>
                     </button>
                   </div>
@@ -145,6 +158,45 @@ const MemberList: React.FC<MemberListProps> = ({ members, contributions, memberT
             className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-violet-600 border border-transparent rounded-md shadow-sm hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
           >
             Add Member
+          </button>
+        </div>
+      </Modal>
+
+      <Modal isOpen={!!resetPasswordMember} onClose={() => setResetPasswordMember(null)} title={`Reset Password for ${resetPasswordMember?.name}`}>
+        <div className="mt-4">
+          <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">New Password</label>
+          <input
+            id="newPassword"
+            type="text"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-violet-500 focus:border-violet-500 sm:text-sm"
+            placeholder="Enter new password"
+          />
+        </div>
+        <div className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              setResetPasswordMember(null);
+              setNewPassword('');
+            }}
+            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              if (resetPasswordMember && newPassword) {
+                await onResetPassword(resetPasswordMember, newPassword);
+                setResetPasswordMember(null);
+                setNewPassword('');
+              }
+            }}
+            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Reset Password
           </button>
         </div>
       </Modal>
