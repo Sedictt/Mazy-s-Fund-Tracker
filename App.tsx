@@ -14,7 +14,7 @@ import DataTablePage from './components/DataTablePage';
 import LoginPage from './components/LoginPage';
 import MemberSummaryPage from './components/MemberSummaryPage';
 import GroupChat from './components/GroupChat';
-import { getTodayDateString, countContributionDays } from './utils/date';
+import { getTodayDateString, countContributionDays, calculateExpectedTotal, getCurrentContributionAmount } from './utils/date';
 import { saveContributionToFirestore, deleteContributionFromFirestore, saveMultipleContributionsToFirestore, loadContributionsFromFirestore } from './firestoreContributions';
 import { loadMembersFromFirestore, saveMultipleMembersToFirestore, deleteMemberFromFirestore } from './firestoreMembers';
 import { updateMemberCredentials, migrateLegacyCredentials } from './memberCredentials';
@@ -23,6 +23,8 @@ import { subscribeToMessages, ChatMessage } from './firestoreMessages';
 import { saveWishlistItemToFirestore, deleteWishlistItemFromFirestore, loadWishlistItemsFromFirestore } from './firestoreWishlist';
 import Wishlist from './components/Wishlist';
 import AnnouncementsModal from './components/AnnouncementsModal';
+import AdminSettingsModal from './components/AdminSettingsModal';
+import { loadSettingsFromFirestore, saveSettingsToFirestore, ContributionRule } from './firestoreSettings';
 
 type Page = 'dashboard' | 'dataTable' | 'members';
 type UserRole = 'admin' | 'member';
@@ -35,6 +37,7 @@ const App: React.FC = () => {
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [goal, setGoal] = useState<number>(5000);
+  const [contributionRules, setContributionRules] = useState<ContributionRule[]>([]);
   const [payingMember, setPayingMember] = useState<Member | null>(null);
   const [editingContribution, setEditingContribution] = useState<Contribution | null>(null);
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
@@ -43,7 +46,8 @@ const App: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showMemberList, setShowMemberList] = useState(false);
   const [showContributionLog, setShowContributionLog] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showAdminSettings, setShowAdminSettings] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
   const [showAnnouncements, setShowAnnouncements] = useState(true);
   const [isDailyTrackerExpanded, setIsDailyTrackerExpanded] = useState(true);
@@ -56,7 +60,7 @@ const App: React.FC = () => {
     type: 'info',
   });
 
-  const CONTRIBUTION_AMOUNT = 10;
+  const CONTRIBUTION_AMOUNT = getCurrentContributionAmount(contributionRules);
 
   const handleLogin = (username: string, role: UserRole) => {
     setCurrentUser(username);
@@ -157,6 +161,13 @@ const App: React.FC = () => {
       .catch(error => {
         console.error('Failed to load wishlist items from Firestore', error);
       });
+
+    loadSettingsFromFirestore().then(settings => {
+      if (settings) {
+        setGoal(settings.goal);
+        setContributionRules(settings.contributionRules || []);
+      }
+    });
   }, []);
 
   // Request notification permission when user is logged in and members are loaded
@@ -218,6 +229,12 @@ const App: React.FC = () => {
     });
     return new Date(earliestDate.date).toISOString();
   }, [contributions]);
+
+  const handleSetSettings = (newGoal: number, newRules: ContributionRule[]) => {
+    setGoal(newGoal);
+    setContributionRules(newRules);
+    // Saving is handled inside AdminSettingsModal, but we update local state here
+  };
 
   const addMember = (name: string) => {
     if (name.trim() === '' || members.some(m => m.name.toLowerCase() === name.trim().toLowerCase())) {
@@ -519,8 +536,7 @@ const App: React.FC = () => {
     let outstanding = 0;
 
     members.forEach(member => {
-      const contributionDays = countContributionDays(member.joinDate, today);
-      const expected = contributionDays * CONTRIBUTION_AMOUNT;
+      const expected = calculateExpectedTotal(member.joinDate, today, contributionRules);
       const actual = totals.get(member.id) || 0;
       const balance = expected - actual;
       balancesMap.set(member.id, balance);
@@ -557,6 +573,7 @@ const App: React.FC = () => {
       <>
         <MemberSummaryPage
           members={membersWithTotals}
+          contributions={contributions}
           currentUsername={currentUser}
           onLogout={handleLogout}
           onUpdateProfile={handleMemberUpdateProfile}
@@ -595,6 +612,7 @@ const App: React.FC = () => {
         }}
         unreadCount={unreadMessageCount}
         onOpenWishlist={() => setShowWishlist(true)}
+        onOpenSettings={() => setShowAdminSettings(true)}
       />
       <main className="container mx-auto p-4 md:p-6 lg:p-8">
         {page === 'dashboard' ? (
@@ -637,7 +655,7 @@ const App: React.FC = () => {
                     goalAmount={goal}
                     memberCount={members.length}
                     outstandingBalance={outstandingBalance}
-                    onSetGoal={setGoal}
+                    onSetGoal={(newGoal) => handleSetSettings(newGoal, contributionRules)}
                     onImportData={handleImportData}
                     hideTotalFunds={true}
                   />
@@ -728,7 +746,7 @@ const App: React.FC = () => {
 
               {/* Data Import Card */}
               <button
-                onClick={() => setShowSettings(true)}
+                onClick={() => setShowImportModal(true)}
                 className="group col-span-2 lg:col-span-1"
               >
                 <div className="h-full p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer border border-violet-200">
@@ -853,6 +871,7 @@ const App: React.FC = () => {
               <div className="p-4">
                 <MemberList
                   members={members}
+                  contributions={contributions}
                   memberTotals={memberTotals}
                   balances={balances}
                   onAddMember={addMember}
@@ -897,15 +916,15 @@ const App: React.FC = () => {
         )
       }
 
-      {/* Settings Modal */}
+      {/* Import Data Modal */}
       {
-        showSettings && (
+        showImportModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
                 <h2 className="text-xl font-bold text-gray-800">Settings</h2>
                 <button
-                  onClick={() => setShowSettings(false)}
+                  onClick={() => setShowImportModal(false)}
                   className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -919,7 +938,7 @@ const App: React.FC = () => {
                   goalAmount={goal}
                   memberCount={members.length}
                   outstandingBalance={outstandingBalance}
-                  onSetGoal={setGoal}
+                  onSetGoal={(newGoal) => handleSetSettings(newGoal, contributionRules)}
                   onImportData={handleImportData}
                 />
               </div>
@@ -963,6 +982,14 @@ const App: React.FC = () => {
       <AnnouncementsModal
         isOpen={showAnnouncements}
         onClose={() => setShowAnnouncements(false)}
+      />
+
+      <AdminSettingsModal
+        isOpen={showAdminSettings}
+        onClose={() => setShowAdminSettings(false)}
+        currentGoal={goal}
+        currentRules={contributionRules}
+        onUpdateSettings={handleSetSettings}
       />
     </div >
   );

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Member, Contribution } from '../types';
 import { getTodayDateString } from '../utils/date';
+import { calculateStreak } from '../utils/gamification';
 
 interface DailyTrackerProps {
   members: Member[];
@@ -35,7 +36,25 @@ const DailyTracker: React.FC<DailyTrackerProps> = ({ members, contributions, onA
                         (member.name || '?').charAt(0)
                       )}
                     </div>
-                    <p className="text-md font-medium text-gray-900 truncate">{member.name || 'Unknown Member'}</p>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <p className="text-md font-medium text-gray-900 truncate">{member.name || 'Unknown Member'}</p>
+                        {(() => {
+                          const streak = calculateStreak(member.id, contributions);
+                          return (
+                            <span
+                              className={`flex items-center text-xs font-bold px-1.5 py-0.5 rounded-full ${streak > 0
+                                  ? 'text-orange-600 bg-orange-100'
+                                  : 'text-gray-400 bg-gray-100 grayscale'
+                                }`}
+                              title={`${streak} Day Streak`}
+                            >
+                              🔥 {streak}
+                            </span>
+                          );
+                        })()}
+                      </div>
+                    </div>
                   </div>
                   {hasPaid ? (
                     <div className="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-green-700 bg-green-100 rounded-full flex-shrink-0">

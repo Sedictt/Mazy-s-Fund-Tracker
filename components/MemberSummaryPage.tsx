@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import Card from './common/Card';
-import { Member, WishlistItem } from '../types';
+import { Member, WishlistItem, Contribution } from '../types';
 import MemberProfileSettings from './MemberProfileSettings';
 import Wishlist from './Wishlist';
 import AnnouncementsModal from './AnnouncementsModal';
+import { getMemberBadges, calculateStreak } from '../utils/gamification';
 
 
 interface MemberSummaryPageProps {
   members: Member[];
+  contributions: Contribution[];
   currentUsername: string;
   onLogout: () => void;
   onUpdateProfile: (displayName: string, profilePicture?: string) => void;
@@ -22,6 +24,7 @@ interface MemberSummaryPageProps {
 
 const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
   members,
+  contributions,
   currentUsername,
   onLogout,
   onUpdateProfile,
@@ -182,7 +185,23 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
                 )}
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Your Profile</p>
-                  <h3 className="text-2xl font-bold text-gray-800">{currentMember.name}</h3>
+                  <div className="flex items-center gap-2 justify-center sm:justify-start">
+                    <h3 className="text-2xl font-bold text-gray-800">{currentMember.name}</h3>
+                    {(() => {
+                      const streak = calculateStreak(currentMember.id, contributions);
+                      return (
+                        <span
+                          className={`flex items-center text-sm font-bold px-2 py-0.5 rounded-full ${streak > 0
+                              ? 'text-orange-600 bg-orange-100'
+                              : 'text-gray-400 bg-gray-100 grayscale'
+                            }`}
+                          title={`${streak} Day Streak`}
+                        >
+                          🔥 {streak}
+                        </span>
+                      );
+                    })()}
+                  </div>
                 </div>
               </div>
 
@@ -194,6 +213,36 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
                 <div className="bg-white rounded-lg p-4 shadow-sm">
                   <p className="text-xs text-gray-500 mb-1">Current Balance</p>
                   <p className="text-2xl font-bold text-blue-600">₱{currentMember.balance.toFixed(2)}</p>
+                </div>
+              </div>
+
+              {/* Badges & Streak Section */}
+              <div className="mt-6 pt-6 border-t border-violet-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Achievements</h4>
+                  <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${calculateStreak(currentMember.id, contributions) > 0
+                    ? 'bg-orange-100 text-orange-700'
+                    : 'bg-gray-100 text-gray-400 grayscale'
+                    }`}>
+                    <span>🔥</span>
+                    <span>{calculateStreak(currentMember.id, contributions)} Day Streak</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  {getMemberBadges(currentMember, contributions).length > 0 ? (
+                    getMemberBadges(currentMember, contributions).map(badge => (
+                      <div key={badge.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${badge.color}`}>
+                        <span className="text-lg">{badge.icon}</span>
+                        <div>
+                          <p className="text-xs font-bold">{badge.name}</p>
+                          <p className="text-[10px] opacity-80">{badge.description}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">Keep contributing to earn badges!</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -232,6 +281,20 @@ const MemberSummaryPage: React.FC<MemberSummaryPageProps> = ({
                             </div>
                           )}
                           <span className="font-medium text-gray-800">{member.name}</span>
+                          {(() => {
+                            const streak = calculateStreak(member.id, contributions);
+                            return (
+                              <span
+                                className={`flex items-center text-xs font-bold px-1.5 py-0.5 rounded-full ${streak > 0
+                                  ? 'text-orange-600 bg-orange-100'
+                                  : 'text-gray-400 bg-gray-100 grayscale'
+                                  }`}
+                                title={`${streak} Day Streak`}
+                              >
+                                🔥 {streak}
+                              </span>
+                            );
+                          })()}
                         </div>
                       </td>
                       <td className="text-right py-3 px-2 sm:px-4 font-semibold text-green-600">
